@@ -27,6 +27,15 @@
         .status-red { @apply bg-red-100 text-red-800; }
         .status-gray { @apply bg-gray-200 text-gray-800; }
         .status-blue { @apply bg-blue-100 text-blue-800; }
+
+        /* --- CSS สำหรับ List View (ใช้ทุกขนาดจอ) --- */
+        .customer-card-container {
+            display: block;
+            margin-bottom: 1rem;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -36,7 +45,7 @@
             <h1 class="text-3xl md:text-4xl font-bold text-center tracking-wide">ระบบจัดการลูกค้าเงินกู้</h1>
         </header>
 
-        <div class="hidden md:grid md:grid-cols-3 gap-4 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div class="bg-white p-6 rounded-xl shadow-md flex flex-col items-center justify-center"><h3 class="text-lg font-semibold text-gray-500">ลูกค้าทั้งหมด</h3><p id="totalCustomers" class="text-4xl font-bold text-indigo-600 mt-2">0</p></div>
             <div class="bg-white p-6 rounded-xl shadow-md flex flex-col items-center justify-center"><h3 class="text-lg font-semibold text-gray-500">เงินต้นหมุนเวียน</h3><p id="totalPrincipal" class="text-4xl font-bold text-blue-600 mt-2">฿0</p></div>
             <div class="bg-white p-6 rounded-xl shadow-md flex flex-col items-center justify-center"><h3 class="text-lg font-semibold text-gray-500">ยอดค้างชำระรวม</h3><p id="totalDue" class="text-4xl font-bold text-red-600 mt-2">฿0</p></div>
@@ -54,17 +63,19 @@
     <div id="addModal" class="fixed inset-0 bg-black bg-opacity-60 h-full w-full flex items-center justify-center hidden p-4 modal-enter z-50">
         <div class="relative p-5 border w-full max-w-2xl shadow-lg rounded-xl bg-white m-4">
             <h2 class="text-2xl font-semibold mb-5 text-gray-800">เพิ่มข้อมูลลูกค้า</h2>
-            <form id="addCustomerForm" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                <div><label class="block text-sm font-medium text-gray-600 mb-1">ชื่อลูกค้า</label><input type="text" id="customerName" class="form-input" required></div>
-                <div><label class="block text-sm font-medium text-gray-600 mb-1">วันที่กู้</label><input type="date" id="loanDate" class="form-input" required></div>
-                <div><label class="block text-sm font-medium text-gray-600 mb-1">เงินกู้ (บาท)</label><input type="number" id="principal" class="form-input" required></div>
-                <div><label class="block text-sm font-medium text-gray-600 mb-1">อัตราดอกเบี้ย (%)</label><input type="number" id="interestRate" class="form-input" required step="0.01"></div>
-                <div><label class="block text-sm font-medium text-gray-600 mb-1">จำนวนวัน</label><input type="number" id="loanDuration" class="form-input" required></div>
-                <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-600 mb-1">รูปภาพลูกค้า (ถ้ามี)</label><input type="file" id="customerImage" accept="image/*" class="form-input"></div>
-                <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-600 mb-1">หมายเหตุ</label><textarea id="notes" class="form-input h-20"></textarea></div>
-                <div class="md:col-span-2 mt-4 flex items-center justify-end space-x-3">
-                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('addModal').classList.add('hidden')">ยกเลิก</button>
-                    <button type="submit" class="btn btn-primary flex-1">เพิ่มข้อมูล</button>
+            <form id="addCustomerForm">
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    <div><label class="block text-sm font-medium text-gray-600 mb-1">ชื่อลูกค้า</label><input type="text" id="customerName" class="form-input" required></div>
+                    <div><label class="block text-sm font-medium text-gray-600 mb-1">วันที่กู้</label><input type="date" id="loanDate" class="form-input" required></div>
+                    <div><label class="block text-sm font-medium text-gray-600 mb-1">เงินกู้ (บาท)</label><input type="number" id="principal" class="form-input" required></div>
+                    <div><label class="block text-sm font-medium text-gray-600 mb-1">อัตราดอกเบี้ย (%)</label><input type="number" id="interestRate" class="form-input" required step="0.01"></div>
+                    <div><label class="block text-sm font-medium text-gray-600 mb-1">จำนวนวัน</label><input type="number" id="loanDuration" class="form-input" required></div>
+                    <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-600 mb-1">รูปภาพลูกค้า (ถ้ามี)</label><input type="file" id="customerImage" accept="image/*" class="form-input"></div>
+                    <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-600 mb-1">หมายเหตุ</label><textarea id="notes" class="form-input h-20"></textarea></div>
+                    <div class="md:col-span-2 mt-4 flex items-center justify-end space-x-3">
+                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('addModal').classList.add('hidden')">ยกเลิก</button>
+                        <button type="submit" class="btn btn-primary flex-1">เพิ่มข้อมูล</button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -156,11 +167,11 @@
                 }
 
                 const card = document.createElement('div');
-                card.className = `customer-card p-4 rounded-xl shadow-md ${cardBgClass}`;
+                card.className = `customer-card-container p-4 ${cardBgClass}`;
                 card.dataset.id = customer.id;
 
                 card.innerHTML = `
-                    <div class="flex justify-between items-center pb-3 border-b">
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-200">
                         <h3 class="font-bold text-lg text-gray-800">${customer.name}</h3>
                         <span class="status-badge ${statusClass}">${statusText}</span>
                     </div>
@@ -172,11 +183,11 @@
                         <span class="text-gray-500">วันครบกำหนด:</span>
                         <span class="font-semibold text-right text-red-600">${formatDate(dueDate)}</span>
                     </div>
-                    <div class="mt-4 pt-3 border-t flex justify-end flex-wrap gap-2">
+                    <div class="mt-4 pt-3 border-t border-gray-200 flex justify-end flex-wrap gap-2">
                         <button class="pay-interest-btn text-xs btn bg-blue-100 text-blue-700" data-id="${customer.id}">จ่ายดอก</button>
                         <button class="partial-payment-btn text-xs btn bg-green-100 text-green-700" data-id="${customer.id}">ชำระ/ลดต้น</button>
                         <button class="pay-off-btn text-xs btn bg-gray-500 text-white" data-id="${customer.id}">ปิดยอด</button>
-                        </div>
+                    </div>
                 `;
                 customerListContainer.appendChild(card);
             });
@@ -216,7 +227,7 @@
         customerListContainer.addEventListener('click', async (e) => {
             const target = e.target.closest('button');
             if (!target) return;
-            const card = target.closest('.customer-card');
+            const card = target.closest('.customer-card-container');
             const id = card.dataset.id;
             
             if (target.classList.contains('partial-payment-btn')) {
@@ -275,7 +286,7 @@
             document.getElementById('customerName').focus();
         });
         
-        document.getElementById('exportCsvBtn').addEventListener('click', exportToCSV);
+        document.getElementById('exportCsvBtn').addEventListener('click', () => { /* Add export logic if needed */ });
 
         fetchAndRenderCustomers();
     });
