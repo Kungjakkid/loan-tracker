@@ -111,10 +111,12 @@
     </div>
 
 <script>
+    // === SETUP & CONFIG ===
     const SUPABASE_URL = 'https://dkbojdqysnpyftjpcodv.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrYm9qZHF5c25weWZ0anBjb2R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0NjgzNzMsImV4cCI6MjA3MzA0NDM3M30.-_Ulncr6WV2j98MAq2FgvnqmZ4WwF42OvmvJrmLpaGA';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    // === GLOBAL HELPER FUNCTIONS (ย้ายฟังก์ชันมาไว้ข้างนอก) ===
     const formatDate = (isoString) => {
         if (!isoString) return '';
         const date = new Date(isoString);
@@ -229,7 +231,8 @@
             customerListContainer.appendChild(card);
         });
     }
-    
+
+    // === START APP & ATTACH EVENT LISTENERS ===
     document.addEventListener('DOMContentLoaded', () => {
         const customerListContainer = document.getElementById('customerListContainer');
         const addCustomerBtn = document.getElementById('addCustomerBtn');
@@ -276,9 +279,8 @@
 
         customerListContainer.addEventListener('click', async (e) => {
             const target = e.target.closest('button, a');
-            if (!target) return;
+            if (!target || !target.dataset.id) return;
             const id = target.dataset.id;
-            if(!id) return;
             
             if (target.classList.contains('customer-detail-link')) {
                 e.preventDefault();
