@@ -11,12 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Kanit', sans-serif; background-color: #f0f4f8; }
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #a8b1c2; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #8892a3; }
         .form-input { @apply w-full px-3 py-2 text-gray-700 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition; }
-        .btn { @apply font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300; }
+        .btn { @apply font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 transform hover:-translate-y-px; }
         .btn-primary { @apply btn bg-blue-500 text-white hover:bg-blue-600; }
         .btn-secondary { @apply btn bg-gray-200 text-gray-700 hover:bg-gray-300; }
         .btn-success { @apply btn bg-green-500 text-white hover:bg-green-600; }
@@ -25,23 +21,12 @@
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
         }
-        .table-container { max-height: 65vh; }
         .status-badge { @apply inline-block px-2 py-1 text-xs font-semibold rounded-full; }
         .status-green { @apply bg-green-100 text-green-800; }
         .status-yellow { @apply bg-yellow-100 text-yellow-800; }
         .status-red { @apply bg-red-100 text-red-800; }
-        .status-gray { @apply bg-gray-100 text-gray-800; }
+        .status-gray { @apply bg-gray-200 text-gray-800; }
         .status-blue { @apply bg-blue-100 text-blue-800; }
-
-        @media (max-width: 768px) {
-            .responsive-table thead { display: none; }
-            .responsive-table tr { display: block; margin-bottom: 1rem; border-radius: 0.75rem; overflow: hidden; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
-            .responsive-table td { display: block; text-align: right; padding-left: 50%; position: relative; border-bottom: 1px solid #e5e7eb; }
-            .responsive-table td:last-child { border-bottom: 0; }
-            .responsive-table td::before { content: attr(data-label); position: absolute; left: 1.5rem; font-weight: 600; text-align: left; white-space: nowrap; }
-            .responsive-table td.card-header { padding-left: 1.5rem; text-align: left; font-size: 1.125rem; font-weight: 700; background-color: #f9fafb; }
-            .responsive-table td.card-header::before { content: none; }
-        }
     </style>
 </head>
 <body class="antialiased">
@@ -62,42 +47,37 @@
             <button id="exportCsvBtn" class="btn btn-success w-full flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 5a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V6a1 1 0 00-1-1h-1v1a1 1 0 11-2 0V5H7v1a1 1 0 11-2 0V5H4z" /></svg><span>ดึงข้อมูล (CSV)</span></button>
         </div>
        
-        <div class="bg-white shadow-md rounded-xl overflow-hidden">
-            <div class="overflow-x-auto table-container">
-                <table id="customerTable" class="w-full text-sm text-left text-gray-600 responsive-table">
-                    <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0 z-10">
-                        <tr>
-                            <th scope="col" class="px-6 py-3">ชื่อลูกค้า</th><th scope="col" class="px-6 py-3">เงินต้น(ปัจจุบัน)</th><th scope="col" class="px-6 py-3">ครบกำหนด</th><th scope="col" class="px-6 py-3">สถานะ</th><th scope="col" class="px-6 py-3 text-center">จัดการ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="customerTableBody"></tbody>
-                </table>
+        <div id="customerListContainer" class="space-y-4">
             </div>
-        </div>
     </div>
 
     <div id="addModal" class="fixed inset-0 bg-black bg-opacity-60 h-full w-full flex items-center justify-center hidden p-4 modal-enter z-50">
         <div class="relative p-5 border w-full max-w-2xl shadow-lg rounded-xl bg-white m-4">
             <h2 class="text-2xl font-semibold mb-5 text-gray-800">เพิ่มข้อมูลลูกค้า</h2>
-            <form id="addCustomerForm">
-                </form>
+            <form id="addCustomerForm" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">ชื่อลูกค้า</label><input type="text" id="customerName" class="form-input" required></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">วันที่กู้</label><input type="date" id="loanDate" class="form-input" required></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">เงินกู้ (บาท)</label><input type="number" id="principal" class="form-input" required></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">อัตราดอกเบี้ย (%)</label><input type="number" id="interestRate" class="form-input" required step="0.01"></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">จำนวนวัน</label><input type="number" id="loanDuration" class="form-input" required></div>
+                <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-600 mb-1">รูปภาพลูกค้า (ถ้ามี)</label><input type="file" id="customerImage" accept="image/*" class="form-input"></div>
+                <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-600 mb-1">หมายเหตุ</label><textarea id="notes" class="form-input h-20"></textarea></div>
+                <div class="md:col-span-2 mt-4 flex items-center justify-end space-x-3">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('addModal').classList.add('hidden')">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary flex-1">เพิ่มข้อมูล</button>
+                </div>
+            </form>
         </div>
     </div>
-    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-60 h-full w-full flex items-center justify-center hidden p-4 z-50">
-        </div>
-    <div id="detailModal" class="fixed inset-0 bg-black bg-opacity-60 h-full w-full flex items-center justify-center hidden p-4 z-50">
-        </div>
+
     <div id="partialPaymentModal" class="fixed inset-0 bg-black bg-opacity-60 h-full w-full flex items-center justify-center hidden p-4 modal-enter z-50">
         <div class="relative p-5 border w-full max-w-md shadow-lg rounded-xl bg-white m-4">
             <h3 class="text-xl font-semibold mb-4">บันทึกการชำระเงิน/ลดต้น</h3>
             <form id="partialPaymentForm">
                 <input type="hidden" id="partialPaymentLoanId">
-                <div>
-                    <label for="paymentAmount" class="block text-sm font-medium text-gray-600 mb-1">จำนวนเงินที่ชำระ (บาท)</label>
-                    <input type="number" id="paymentAmount" class="form-input" required>
-                </div>
+                <div><label for="paymentAmount" class="block text-sm font-medium text-gray-600 mb-1">จำนวนเงินที่ชำระ (บาท)</label><input type="number" id="paymentAmount" class="form-input" required></div>
                 <div class="mt-6 flex justify-end space-x-3">
-                    <button type="button" id="cancelPartialPaymentBtn" class="btn btn-secondary">ยกเลิก</button>
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('partialPaymentModal').classList.add('hidden')">ยกเลิก</button>
                     <button type="submit" class="btn btn-primary">บันทึก</button>
                 </div>
             </form>
@@ -105,12 +85,10 @@
     </div>
 
 <script>
-    // === SETUP & CONFIG ===
     const SUPABASE_URL = 'https://dkbojdqysnpyftjpcodv.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrYm9qZHF5c25weWZ0anBjb2R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0NjgzNzMsImV4cCI6MjA3MzA0NDM3M30.-_Ulncr6WV2j98MAq2FgvnqmZ4WwF42OvmvJrmLpaGA';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // === UTILITY FUNCTIONS ===
     const formatDate = (isoString) => {
         if (!isoString) return '';
         const date = new Date(isoString);
@@ -127,20 +105,18 @@
         return { interest, totalRepay, dueDate };
     };
     
-    // === CORE LOGIC ===
     document.addEventListener('DOMContentLoaded', () => {
-        const customerTableBody = document.getElementById('customerTableBody');
+        const customerListContainer = document.getElementById('customerListContainer');
         const addCustomerBtn = document.getElementById('addCustomerBtn');
         const addModal = document.getElementById('addModal');
+        const addCustomerForm = document.getElementById('addCustomerForm');
         const partialPaymentModal = document.getElementById('partialPaymentModal');
         const partialPaymentForm = document.getElementById('partialPaymentForm');
-        const cancelPartialPaymentBtn = document.getElementById('cancelPartialPaymentBtn');
         
         async function fetchAndRenderCustomers() {
             const { data: customers, error } = await supabaseClient.from('loans').select('*').order('created_at', { ascending: false });
             if (error) { console.error('Error:', error); return; }
 
-            // Update Dashboard
             const activeLoans = customers.filter(c => c.status !== 'ปิดยอดแล้ว');
             document.getElementById('totalCustomers').textContent = customers.length.toLocaleString('th-TH');
             const totalPrincipal = activeLoans.reduce((sum, c) => sum + c.principal, 0);
@@ -148,20 +124,23 @@
             const totalDue = activeLoans.reduce((sum, c) => sum + calculateLoanDetails(c.principal, c.interestRate, c.loanDuration, c.loanDate).totalRepay, 0);
             document.getElementById('totalDue').textContent = '฿' + totalDue.toLocaleString('th-TH');
 
-            // Render Table
-            customerTableBody.innerHTML = '';
-            if (customers.length === 0) { customerTableBody.innerHTML = `<tr><td colspan="5" class="text-center text-gray-500 py-10">ยังไม่มีข้อมูลลูกค้า</td></tr>`; return; }
+            customerListContainer.innerHTML = '';
+            if (customers.length === 0) { 
+                customerListContainer.innerHTML = `<div class="text-center text-gray-500 py-10 bg-white rounded-xl shadow-md">ยังไม่มีข้อมูลลูกค้า</div>`; 
+                return; 
+            }
             
-            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const today = new Date(); 
+            today.setHours(0, 0, 0, 0);
             
             customers.forEach(customer => {
-                const { dueDate } = calculateLoanDetails(customer.principal, customer.interestRate, customer.loanDuration, customer.loanDate);
+                const { interest, dueDate } = calculateLoanDetails(customer.principal, customer.interestRate, customer.loanDuration, customer.loanDate);
                 const dateParts = dueDate.split('-');
                 const dueDateObj = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
 
                 let statusText = 'กำลังดำเนินการ';
                 let statusClass = 'status-blue';
-                let rowClass = 'bg-white';
+                let cardBgClass = 'bg-white';
 
                 if (customer.status === 'ปิดยอดแล้ว') {
                     statusText = 'ปิดยอดแล้ว';
@@ -169,36 +148,76 @@
                 } else if (dueDateObj < today) {
                     statusText = 'เกินกำหนด';
                     statusClass = 'status-red';
-                    rowClass = 'bg-red-100';
+                    cardBgClass = 'bg-red-50';
                 } else if (dueDateObj.getTime() === today.getTime()) {
                     statusText = 'ครบกำหนดวันนี้';
                     statusClass = 'status-yellow';
-                    rowClass = 'bg-yellow-100';
+                    cardBgClass = 'bg-yellow-50';
                 }
 
-                const row = document.createElement('tr');
-                row.className = rowClass;
-                row.innerHTML = `
-                    <td data-label="ชื่อลูกค้า" class="px-6 py-4 font-medium text-gray-900 card-header"><a href="#" class="text-blue-600 hover:underline customer-detail-link" data-id="${customer.id}">${customer.name}</a></td>
-                    <td data-label="เงินต้น" class="px-6 py-4">${customer.principal.toLocaleString('th-TH')}</td>
-                    <td data-label="ครบกำหนด" class="px-6 py-4 font-semibold">${formatDate(dueDate)}</td>
-                    <td data-label="สถานะ" class="px-6 py-4"><span class="status-badge ${statusClass}">${statusText}</span></td>
-                    <td data-label="จัดการ" class="px-6 py-4 text-center whitespace-nowrap space-x-2">
+                const card = document.createElement('div');
+                card.className = `customer-card p-4 rounded-xl shadow-md ${cardBgClass}`;
+                card.dataset.id = customer.id;
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-center pb-3 border-b">
+                        <h3 class="font-bold text-lg text-gray-800">${customer.name}</h3>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-2 mt-3 text-sm">
+                        <span class="text-gray-500">เงินต้นปัจจุบัน:</span>
+                        <span class="font-semibold text-right">${customer.principal.toLocaleString('th-TH')} บาท</span>
+                        <span class="text-gray-500">ดอกเบี้ยต่องวด:</span>
+                        <span class="font-semibold text-right">${interest.toLocaleString('th-TH', {minimumFractionDigits: 2})} บาท</span>
+                        <span class="text-gray-500">วันครบกำหนด:</span>
+                        <span class="font-semibold text-right text-red-600">${formatDate(dueDate)}</span>
+                    </div>
+                    <div class="mt-4 pt-3 border-t flex justify-end flex-wrap gap-2">
                         <button class="pay-interest-btn text-xs btn bg-blue-100 text-blue-700" data-id="${customer.id}">จ่ายดอก</button>
-                        <button class="partial-payment-btn text-xs btn bg-green-100 text-green-700" data-id="${customer.id}">ลดต้น</button>
+                        <button class="partial-payment-btn text-xs btn bg-green-100 text-green-700" data-id="${customer.id}">ชำระ/ลดต้น</button>
                         <button class="pay-off-btn text-xs btn bg-gray-500 text-white" data-id="${customer.id}">ปิดยอด</button>
-                        <button class="edit-btn text-xs btn bg-yellow-100 text-yellow-700" data-id="${customer.id}">แก้ไข</button>
-                    </td>
+                        </div>
                 `;
-                customerTableBody.appendChild(row);
+                customerListContainer.appendChild(card);
             });
         }
         
-        // --- Event Handlers for Actions ---
-        customerTableBody.addEventListener('click', async (e) => {
-            const target = e.target.closest('button, a');
+        addCustomerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const imageFile = document.getElementById('customerImage').files[0];
+            let imageUrl = null;
+            const submitButton = addCustomerForm.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'กำลังบันทึก...';
+
+            if (imageFile) {
+                const fileName = `${Date.now()}_${imageFile.name}`;
+                const { error: uploadError } = await supabaseClient.storage.from('customer-avatars').upload(fileName, imageFile);
+                if (uploadError) {
+                    alert('อัปโหลดรูปไม่ได้: ' + uploadError.message);
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'เพิ่มข้อมูล';
+                    return;
+                }
+                const { data: publicUrlData } = supabaseClient.storage.from('customer-avatars').getPublicUrl(fileName);
+                imageUrl = publicUrlData.publicUrl;
+            }
+
+            const newLoan = { name: document.getElementById('customerName').value, loanDate: document.getElementById('loanDate').value, principal: parseFloat(document.getElementById('principal').value), interestRate: parseFloat(document.getElementById('interestRate').value), loanDuration: parseInt(document.getElementById('loanDuration').value), status: 'อยู่ระหว่างดำเนินการ', imageUrl: imageUrl };
+            const { error } = await supabaseClient.from('loans').insert([newLoan]);
+            
+            submitButton.disabled = false;
+            submitButton.textContent = 'เพิ่มข้อมูล';
+
+            if (error) { alert('เกิดข้อผิดพลาด: ' + error.message); } 
+            else { await fetchAndRenderCustomers(); addCustomerForm.reset(); addModal.classList.add('hidden'); }
+        });
+
+        customerListContainer.addEventListener('click', async (e) => {
+            const target = e.target.closest('button');
             if (!target) return;
-            const id = target.dataset.id;
+            const card = target.closest('.customer-card');
+            const id = card.dataset.id;
             
             if (target.classList.contains('partial-payment-btn')) {
                 document.getElementById('partialPaymentLoanId').value = id;
@@ -221,37 +240,26 @@
                  await supabaseClient.from('loans').update({ status: 'ปิดยอดแล้ว' }).eq('id', id);
                  fetchAndRenderCustomers();
             }
-            // Add other button handlers like edit, delete, detail link here
         });
 
         partialPaymentForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('partialPaymentLoanId').value;
             const amountPaid = parseFloat(document.getElementById('paymentAmount').value);
-            if (isNaN(amountPaid) || amountPaid <= 0) {
-                alert('กรุณาใส่จำนวนเงินที่ถูกต้อง');
-                return;
-            }
+            if (isNaN(amountPaid) || amountPaid <= 0) { alert('กรุณาใส่จำนวนเงินที่ถูกต้อง'); return; }
             
             const { data: loan } = await supabaseClient.from('loans').select('*').eq('id', id).single();
             const { interest } = calculateLoanDetails(loan.principal, loan.interestRate, loan.loanDuration, loan.loanDate);
-            
-            let principalReduction = 0;
-            let newPrincipal = loan.principal;
-
-            if (amountPaid >= interest) {
-                principalReduction = amountPaid - interest;
-                newPrincipal = loan.principal - principalReduction;
-            }
-
+            let principalReduction = (amountPaid > interest) ? amountPaid - interest : 0;
+            let newPrincipal = loan.principal - principalReduction;
             if (newPrincipal < 0) newPrincipal = 0;
 
             const loanUpdate = {
                 principal: newPrincipal,
-                loanDate: new Date().toISOString().split('T')[0], // Reset cycle date to today
+                loanDate: new Date().toISOString().split('T')[0],
                 status: newPrincipal === 0 ? 'ปิดยอดแล้ว' : 'อยู่ระหว่างดำเนินการ'
             };
-            const paymentRecord = { loan_id: loan.id, amount_paid: amountPaid, payment_date: new Date().toISOString().split('T')[0], notes: `ชำระ ${amountPaid} บาท (ลดต้น ${principalReduction} บาท)` };
+            const paymentRecord = { loan_id: loan.id, amount_paid: amountPaid, payment_date: new Date().toISOString().split('T')[0], notes: `ชำระ ${amountPaid}บ (ลดต้น ${principalReduction}บ)` };
 
             await supabaseClient.from('loans').update(loanUpdate).eq('id', id);
             await supabaseClient.from('payment_history').insert([paymentRecord]);
@@ -261,8 +269,13 @@
             fetchAndRenderCustomers();
         });
 
-        addCustomerBtn.addEventListener('click', () => addModal.classList.remove('hidden'));
-        cancelPartialPaymentBtn.addEventListener('click', () => partialPaymentModal.classList.add('hidden'));
+        addCustomerBtn.addEventListener('click', () => {
+            addCustomerForm.reset();
+            addModal.classList.remove('hidden');
+            document.getElementById('customerName').focus();
+        });
+        
+        document.getElementById('exportCsvBtn').addEventListener('click', exportToCSV);
 
         fetchAndRenderCustomers();
     });
