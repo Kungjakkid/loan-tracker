@@ -19,7 +19,6 @@
         .modal-enter { animation: fadeIn 0.3s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         .status-badge { @apply inline-block px-2 py-1 text-xs font-semibold rounded-full; }
-        .status-green { @apply bg-green-100 text-green-800; }
         .status-yellow { @apply bg-yellow-100 text-yellow-800; }
         .status-red { @apply bg-red-100 text-red-800; }
         .status-gray { @apply bg-gray-200 text-gray-800; }
@@ -29,21 +28,22 @@
 </head>
 <body class="antialiased">
 
-    <div id="debug-log" class="hidden fixed bottom-0 left-0 right-0 bg-red-800 text-white p-4 text-xs z-50"></div>
-
     <div class="container mx-auto p-4 md:p-6 max-w-7xl">
         <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg rounded-xl p-6 mb-8">
             <h1 class="text-3xl md:text-4xl font-bold text-center tracking-wide">ระบบจัดการลูกค้าเงินกู้</h1>
         </header>
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div class="bg-white p-6 rounded-xl shadow-md flex flex-col items-center justify-center"><h3 class="text-lg font-semibold text-gray-500">ลูกค้าทั้งหมด</h3><p id="totalCustomers" class="text-4xl font-bold text-indigo-600 mt-2">0</p></div>
             <div class="bg-white p-6 rounded-xl shadow-md flex flex-col items-center justify-center"><h3 class="text-lg font-semibold text-gray-500">เงินต้นหมุนเวียน</h3><p id="totalPrincipal" class="text-4xl font-bold text-blue-600 mt-2">฿0</p></div>
             <div class="bg-white p-6 rounded-xl shadow-md flex flex-col items-center justify-center"><h3 class="text-lg font-semibold text-gray-500">ยอดค้างชำระรวม</h3><p id="totalDue" class="text-4xl font-bold text-red-600 mt-2">฿0</p></div>
         </div>
+        
         <div class="mb-8 flex space-x-4">
              <button id="addCustomerBtn" class="btn btn-primary w-full flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg><span>เพิ่มลูกค้าใหม่</span></button>
             <button id="exportCsvBtn" class="btn btn-success w-full flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 5a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V6a1 1 0 00-1-1h-1v1a1 1 0 11-2 0V5H7v1a1 1 0 11-2 0V5H4z" /></svg><span>ดึงข้อมูล (CSV)</span></button>
         </div>
+       
         <div id="customerListContainer" class="space-y-4"></div>
     </div>
 
@@ -65,6 +65,36 @@
             </form>
         </div>
     </div>
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-60 h-full w-full flex items-center justify-center hidden p-4 z-50">
+        <div class="relative p-5 border w-full max-w-2xl shadow-lg rounded-xl bg-white m-4 modal-enter">
+            <h3 class="text-2xl leading-6 font-semibold text-gray-900 mb-5">แก้ไขข้อมูลลูกค้า</h3>
+            <form id="editCustomerForm" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                <input type="hidden" id="editCustomerId">
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">ชื่อลูกค้า</label><input type="text" id="editCustomerName" class="form-input" required></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">วันที่กู้</label><input type="date" id="editLoanDate" class="form-input" required></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">เงินกู้ (บาท)</label><input type="number" id="editPrincipal" class="form-input" required></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">อัตราดอกเบี้ย (%)</label><input type="number" id="editInterestRate" class="form-input" required step="0.01"></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">จำนวนวัน</label><input type="number" id="editLoanDuration" class="form-input" required></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">สถานะ</label><select id="editStatus" class="form-input"><option value="อยู่ระหว่างดำเนินการ">อยู่ระหว่างดำเนินการ</option><option value="ปิดยอดแล้ว">ปิดยอดแล้ว</option><option value="เกินกำหนด">เกินกำหนด</option></select></div>
+                <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-600 mb-1">หมายเหตุ</label><textarea id="editNotes" class="form-input"></textarea></div>
+                <div class="md:col-span-2 mt-4 flex items-center justify-end space-x-3">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('editModal').classList.add('hidden')">ยกเลิก</button>
+                    <button type="submit" class="btn btn-success">บันทึกการเปลี่ยนแปลง</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="detailModal" class="fixed inset-0 bg-black bg-opacity-60 h-full w-full flex items-center justify-center hidden p-4 z-50 modal-enter">
+        <div class="relative p-6 border w-full max-w-3xl shadow-lg rounded-xl bg-white m-4 max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4"><h3 class="text-2xl leading-6 font-semibold text-gray-900">รายละเอียดลูกค้า</h3><button id="closeDetailModalBtn" class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button></div>
+            <div class="overflow-y-auto">
+                <img id="detailImage" src="" alt="รูปลูกค้า" class="w-32 h-32 object-cover rounded-lg mb-4 hidden">
+                <div id="detailModalContent" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm"></div>
+                <h4 class="text-lg font-semibold text-gray-800 mt-6 mb-2">ประวัติการชำระเงิน</h4>
+                <div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-600"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th class="px-4 py-2">วันที่ชำระ</th><th class="px-4 py-2">จำนวนเงิน (บาท)</th><th class="px-4 py-2">หมายเหตุ</th></tr></thead><tbody id="paymentHistoryBody"></tbody></table></div>
+            </div>
+        </div>
+    </div>
     <div id="partialPaymentModal" class="fixed inset-0 bg-black bg-opacity-60 h-full w-full flex items-center justify-center hidden p-4 modal-enter z-50">
         <div class="relative p-5 border w-full max-w-md shadow-lg rounded-xl bg-white m-4">
             <h3 class="text-xl font-semibold mb-4">บันทึกการชำระเงิน/ลดต้น</h3>
@@ -80,18 +110,6 @@
     </div>
 
 <script>
-    // === DEBUGGING SETUP ===
-    const debugLog = document.getElementById('debug-log');
-    function logToScreen(message) {
-        debugLog.classList.remove('hidden');
-        debugLog.innerHTML += message + '<br>';
-    }
-    window.onerror = function(message, source, lineno, colno, error) {
-        logToScreen(`ERROR: ${message} at line ${lineno}`);
-        return true; 
-    };
-
-    // === APP SETUP ===
     const SUPABASE_URL = 'https://dkbojdqysnpyftjpcodv.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrYm9qZHF5c25weWZ0anBjb2R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0NjgzNzMsImV4cCI6MjA3MzA0NDM3M30.-_Ulncr6WV2j98MAq2FgvnqmZ4WwF42OvmvJrmLpaGA';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -112,182 +130,249 @@
         return { interest, totalRepay, dueDate };
     };
     
+    async function showDetailModal(loanId) {
+        const detailModal = document.getElementById('detailModal');
+        const detailModalContent = document.getElementById('detailModalContent');
+        const paymentHistoryBody = document.getElementById('paymentHistoryBody');
+        const detailImage = document.getElementById('detailImage');
+
+        detailModalContent.innerHTML = 'กำลังโหลด...';
+        paymentHistoryBody.innerHTML = '';
+        detailImage.classList.add('hidden');
+        detailModal.classList.remove('hidden');
+
+        const { data: loan, error: loanError } = await supabaseClient.from('loans').select('*').eq('id', loanId).single();
+        if (loanError) { detailModalContent.innerHTML = 'ไม่สามารถโหลดข้อมูลได้'; return; }
+
+        if(loan.imageUrl) {
+            detailImage.src = loan.imageUrl;
+            detailImage.classList.remove('hidden');
+        }
+
+        const { interest, totalRepay, dueDate } = calculateLoanDetails(loan.principal, loan.interestRate, loan.loanDuration, loan.loanDate);
+        detailModalContent.innerHTML = `
+            <div class="font-semibold text-gray-500">ชื่อลูกค้า:</div> <div>${loan.name}</div>
+            <div class="font-semibold text-gray-500">สถานะ:</div> <div>${loan.status}</div>
+            <div class="font-semibold text-gray-500">เงินต้น:</div> <div>${loan.principal.toLocaleString('th-TH')} บาท</div>
+            <div class="font-semibold text-gray-500">ยอดรวมที่ต้องชำระ:</div> <div class="font-bold">${totalRepay.toLocaleString('th-TH')} บาท</div>
+            <div class="font-semibold text-gray-500">วันที่กู้:</div> <div>${formatDate(loan.loanDate)}</div>
+            <div class="font-semibold text-gray-500">วันครบกำหนด:</div> <div class="font-bold text-red-600">${formatDate(dueDate)}</div>
+            <div class="font-semibold text-gray-500">อัตราดอกเบี้ย:</div> <div>${loan.interestRate}% (${loan.loanDuration} วัน)</div>
+            <div class="font-semibold text-gray-500">ดอกเบี้ยต่องวด:</div> <div>${interest.toLocaleString('th-TH', {minimumFractionDigits: 2})} บาท</div>
+            <div class="font-semibold text-gray-500">ดอกเบี้ยที่จ่ายแล้ว:</div> <div class="text-green-600">${(loan.interestPaid || 0).toLocaleString('th-TH')} บาท</div>
+            <div class="font-semibold text-gray-500">จำนวนครั้งที่จ่าย:</div> <div>${loan.paymentsMade || 0} ครั้ง</div>
+            <div class="font-semibold text-gray-500 md:col-span-2">หมายเหตุ:</div>
+            <div class="md:col-span-2">${loan.notes || '-'}</div>
+        `;
+
+        const { data: payments, error: paymentError } = await supabaseClient.from('payment_history').select('*').eq('loan_id', loanId).order('payment_date', { ascending: false });
+        if (paymentError) { paymentHistoryBody.innerHTML = '<tr><td colspan="3">ไม่สามารถโหลดประวัติได้</td></tr>'; return; }
+        if (payments.length === 0) {
+            paymentHistoryBody.innerHTML = '<tr><td colspan="3" class="text-center py-2">ยังไม่มีประวัติการชำระ</td></tr>';
+        } else {
+            paymentHistoryBody.innerHTML = payments.map(p => `<tr class="border-b"><td class="px-4 py-2">${formatDate(p.payment_date)}</td><td class="px-4 py-2">${p.amount_paid.toLocaleString('th-TH')} บาท</td><td class="px-4 py-2">${p.notes || ''}</td></tr>`).join('');
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-        try {
-            const customerListContainer = document.getElementById('customerListContainer');
-            const addCustomerBtn = document.getElementById('addCustomerBtn');
-            const addModal = document.getElementById('addModal');
-            const addCustomerForm = document.getElementById('addCustomerForm');
-            const partialPaymentModal = document.getElementById('partialPaymentModal');
-            const partialPaymentForm = document.getElementById('partialPaymentForm');
-            
-            async function fetchAndRenderCustomers() {
-                const { data: customers, error } = await supabaseClient.from('loans').select('*').order('created_at', { ascending: false });
-                if (error) {
-                    logToScreen('Supabase fetch error: ' + error.message);
-                    console.error('Error:', error); 
-                    return;
-                }
+        const customerListContainer = document.getElementById('customerListContainer');
+        const addCustomerBtn = document.getElementById('addCustomerBtn');
+        const addModal = document.getElementById('addModal');
+        const addCustomerForm = document.getElementById('addCustomerForm');
+        const editModal = document.getElementById('editModal');
+        const editCustomerForm = document.getElementById('editCustomerForm');
+        const detailModal = document.getElementById('detailModal');
+        const closeDetailModalBtn = document.getElementById('closeDetailModalBtn');
+        const partialPaymentModal = document.getElementById('partialPaymentModal');
+        const partialPaymentForm = document.getElementById('partialPaymentForm');
+        
+        async function fetchAndRenderCustomers() {
+            const { data: customers, error } = await supabaseClient.from('loans').select('*').order('created_at', { ascending: false });
+            if (error) { console.error('Error:', error); return; }
 
-                const activeLoans = customers.filter(c => c.status !== 'ปิดยอดแล้ว');
-                document.getElementById('totalCustomers').textContent = customers.length.toLocaleString('th-TH');
-                const totalPrincipal = activeLoans.reduce((sum, c) => sum + c.principal, 0);
-                document.getElementById('totalPrincipal').textContent = '฿' + totalPrincipal.toLocaleString('th-TH');
-                const totalDue = activeLoans.reduce((sum, c) => sum + calculateLoanDetails(c.principal, c.interestRate, c.loanDuration, c.loanDate).totalRepay, 0);
-                document.getElementById('totalDue').textContent = '฿' + totalDue.toLocaleString('th-TH');
+            const activeLoans = customers.filter(c => c.status !== 'ปิดยอดแล้ว');
+            document.getElementById('totalCustomers').textContent = customers.length.toLocaleString('th-TH');
+            const totalPrincipal = activeLoans.reduce((sum, c) => sum + c.principal, 0);
+            document.getElementById('totalPrincipal').textContent = '฿' + totalPrincipal.toLocaleString('th-TH');
+            const totalDue = activeLoans.reduce((sum, c) => sum + calculateLoanDetails(c.principal, c.interestRate, c.loanDuration, c.loanDate).totalRepay, 0);
+            document.getElementById('totalDue').textContent = '฿' + totalDue.toLocaleString('th-TH');
 
-                customerListContainer.innerHTML = '';
-                if (customers.length === 0) { 
-                    customerListContainer.innerHTML = `<div class="text-center text-gray-500 py-10 bg-white rounded-xl shadow-md">ยังไม่มีข้อมูลลูกค้า</div>`; 
-                    return; 
-                }
-                
-                const today = new Date(); 
-                today.setHours(0, 0, 0, 0);
-                
-                customers.forEach(customer => {
-                    const { interest, dueDate } = calculateLoanDetails(customer.principal, customer.interestRate, customer.loanDuration, customer.loanDate);
-                    const dateParts = dueDate.split('-');
-                    const dueDateObj = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
-
-                    let statusText = 'กำลังดำเนินการ';
-                    let statusClass = 'status-blue';
-                    let cardBgClass = 'bg-white';
-
-                    if (customer.status === 'ปิดยอดแล้ว') {
-                        statusText = 'ปิดยอดแล้ว';
-                        statusClass = 'status-gray';
-                    } else if (dueDateObj < today) {
-                        statusText = 'เกินกำหนด';
-                        statusClass = 'status-red';
-                        cardBgClass = 'bg-red-50';
-                    } else if (dueDateObj.getTime() === today.getTime()) {
-                        statusText = 'ครบกำหนดวันนี้';
-                        statusClass = 'status-yellow';
-                        cardBgClass = 'bg-yellow-50';
-                    }
-
-                    const card = document.createElement('div');
-                    card.className = `customer-card-container p-4 ${cardBgClass}`;
-                    card.dataset.id = customer.id;
-                    card.innerHTML = `
-                        <div class="flex justify-between items-center pb-3 border-b border-gray-200">
-                            <h3 class="font-bold text-lg text-gray-800">${customer.name}</h3>
-                            <span class="status-badge ${statusClass}">${statusText}</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-x-4 gap-y-2 mt-3 text-sm">
-                            <span class="text-gray-500">เงินต้นปัจจุบัน:</span><span class="font-semibold text-right">${customer.principal.toLocaleString('th-TH')} บาท</span>
-                            <span class="text-gray-500">ดอกเบี้ยต่องวด:</span><span class="font-semibold text-right">${interest.toLocaleString('th-TH', {minimumFractionDigits: 2})} บาท</span>
-                            <span class="text-gray-500">วันครบกำหนด:</span><span class="font-semibold text-right text-red-600">${formatDate(dueDate)}</span>
-                        </div>
-                        <div class="mt-4 pt-3 border-t border-gray-200 flex justify-end flex-wrap gap-2">
-                            <button class="pay-interest-btn text-xs btn bg-blue-100 text-blue-700" data-id="${customer.id}">จ่ายดอก</button>
-                            <button class="partial-payment-btn text-xs btn bg-green-100 text-green-700" data-id="${customer.id}">ชำระ/ลดต้น</button>
-                            <button class="pay-off-btn text-xs btn bg-gray-500 text-white" data-id="${customer.id}">ปิดยอด</button>
-                        </div>
-                    `;
-                    customerListContainer.appendChild(card);
-                });
+            customerListContainer.innerHTML = '';
+            if (customers.length === 0) { 
+                customerListContainer.innerHTML = `<div class="text-center text-gray-500 py-10 bg-white rounded-xl shadow-md">ยังไม่มีข้อมูลลูกค้า</div>`; 
+                return; 
             }
             
-            addCustomerForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const imageFile = document.getElementById('customerImage').files[0];
-                let imageUrl = null;
-                const submitButton = addCustomerForm.querySelector('button[type="submit"]');
-                submitButton.disabled = true;
-                submitButton.textContent = 'กำลังบันทึก...';
+            const today = new Date(); 
+            today.setHours(0, 0, 0, 0);
+            
+            customers.forEach(customer => {
+                const { interest, dueDate } = calculateLoanDetails(customer.principal, customer.interestRate, customer.loanDuration, customer.loanDate);
+                const dateParts = dueDate.split('-');
+                const dueDateObj = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
 
-                if (imageFile) {
-                    const fileName = `${Date.now()}_${imageFile.name}`;
-                    const { error: uploadError } = await supabaseClient.storage.from('customer-avatars').upload(fileName, imageFile);
-                    if (uploadError) {
-                        alert('อัปโหลดรูปไม่ได้: ' + uploadError.message);
-                        logToScreen('Upload error: ' + uploadError.message);
-                        submitButton.disabled = false; submitButton.textContent = 'เพิ่มข้อมูล'; return;
-                    }
-                    const { data: publicUrlData } = supabaseClient.storage.from('customer-avatars').getPublicUrl(fileName);
-                    imageUrl = publicUrlData.publicUrl;
+                let statusText = 'กำลังดำเนินการ';
+                let statusClass = 'status-blue';
+                let cardBgClass = 'bg-white';
+
+                if (customer.status === 'ปิดยอดแล้ว') {
+                    statusText = 'ปิดยอดแล้ว';
+                    statusClass = 'status-gray';
+                } else if (dueDateObj < today) {
+                    statusText = 'เกินกำหนด';
+                    statusClass = 'status-red';
+                    cardBgClass = 'bg-red-50';
+                } else if (dueDateObj.getTime() === today.getTime()) {
+                    statusText = 'ครบกำหนดวันนี้';
+                    statusClass = 'status-yellow';
+                    cardBgClass = 'bg-yellow-50';
                 }
 
-                const newLoan = { name: document.getElementById('customerName').value, loanDate: document.getElementById('loanDate').value, principal: parseFloat(document.getElementById('principal').value), interestRate: parseFloat(document.getElementById('interestRate').value), loanDuration: parseInt(document.getElementById('loanDuration').value), status: 'อยู่ระหว่างดำเนินการ', imageUrl: imageUrl, notes: document.getElementById('notes').value };
-                const { error } = await supabaseClient.from('loans').insert([newLoan]);
-                
-                submitButton.disabled = false; submitButton.textContent = 'เพิ่มข้อมูล';
+                const card = document.createElement('div');
+                card.className = `customer-card-container p-4 ${cardBgClass}`;
+                card.dataset.id = customer.id;
 
-                if (error) { 
-                    alert('เกิดข้อผิดพลาด: ' + error.message);
-                    logToScreen('Insert error: ' + error.message);
-                } else { 
-                    await fetchAndRenderCustomers(); 
-                    addCustomerForm.reset(); 
-                    addModal.classList.add('hidden'); 
-                }
+                card.innerHTML = `
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-200">
+                        <h3 class="font-bold text-lg text-gray-800"><a href="#" class="text-blue-600 hover:underline customer-detail-link" data-id="${customer.id}">${customer.name}</a></h3>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-2 mt-3 text-sm">
+                        <span class="text-gray-500">เงินต้นปัจจุบัน:</span>
+                        <span class="font-semibold text-right">${customer.principal.toLocaleString('th-TH')} บาท</span>
+                        <span class="text-gray-500">ดอกเบี้ยต่องวด:</span>
+                        <span class="font-semibold text-right">${interest.toLocaleString('th-TH', {minimumFractionDigits: 2})} บาท</span>
+                        <span class="text-gray-500">วันครบกำหนด:</span>
+                        <span class="font-semibold text-right text-red-600">${formatDate(dueDate)}</span>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-gray-200 flex justify-end flex-wrap gap-2">
+                        <button class="pay-interest-btn text-xs btn bg-blue-100 text-blue-700" data-id="${customer.id}">จ่ายดอก</button>
+                        <button class="partial-payment-btn text-xs btn bg-green-100 text-green-700" data-id="${customer.id}">ชำระ/ลดต้น</button>
+                        <button class="pay-off-btn text-xs btn bg-gray-500 text-white" data-id="${customer.id}">ปิดยอด</button>
+                        <button class="edit-btn text-xs btn bg-yellow-100 text-yellow-700" data-id="${customer.id}">แก้ไข</button>
+                        <button class="delete-btn text-xs btn bg-red-100 text-red-700" data-id="${customer.id}">ลบ</button>
+                    </div>
+                `;
+                customerListContainer.appendChild(card);
             });
+        }
+        
+        addCustomerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const imageFile = document.getElementById('customerImage').files[0];
+            let imageUrl = null;
+            const submitButton = addCustomerForm.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'กำลังบันทึก...';
 
-            customerListContainer.addEventListener('click', async (e) => {
-                const target = e.target.closest('button');
-                if (!target) return;
-                const card = target.closest('.customer-card-container');
-                const id = card.dataset.id;
-                
-                if (target.classList.contains('partial-payment-btn')) {
-                    document.getElementById('partialPaymentLoanId').value = id;
-                    partialPaymentModal.classList.remove('hidden');
-                    document.getElementById('paymentAmount').focus();
-                } else if (target.classList.contains('pay-interest-btn')) {
-                    if (!confirm('ยืนยันการชำระดอกเบี้ย?')) return;
-                    const { data: loan } = await supabaseClient.from('loans').select('*').eq('id', id).single();
-                    const { interest, dueDate } = calculateLoanDetails(loan.principal, loan.interestRate, loan.loanDuration, loan.loanDate);
-                    const newLoanDate = new Date(dueDate);
-                    const loanUpdate = { interestPaid: (loan.interestPaid || 0) + interest, paymentsMade: (loan.paymentsMade || 0) + 1, loanDate: newLoanDate.toISOString().split('T')[0] };
-                    const paymentRecord = { loan_id: loan.id, amount_paid: interest, payment_date: new Date().toISOString().split('T')[0], notes: 'ชำระดอกเบี้ย' };
-                    await supabaseClient.from('loans').update(loanUpdate).eq('id', id);
-                    await supabaseClient.from('payment_history').insert([paymentRecord]);
-                    fetchAndRenderCustomers();
-                } else if (target.classList.contains('pay-off-btn')) {
-                     if (!confirm('ยืนยันการปิดยอด?')) return;
-                     await supabaseClient.from('loans').update({ status: 'ปิดยอดแล้ว' }).eq('id', id);
-                     fetchAndRenderCustomers();
+            if (imageFile) {
+                const fileName = `${Date.now()}_${imageFile.name}`;
+                const { error: uploadError } = await supabaseClient.storage.from('customer-avatars').upload(fileName, imageFile);
+                if (uploadError) {
+                    alert('อัปโหลดรูปไม่ได้: ' + uploadError.message);
+                    submitButton.disabled = false; submitButton.textContent = 'เพิ่มข้อมูล'; return;
                 }
-            });
+                const { data: publicUrlData } = supabaseClient.storage.from('customer-avatars').getPublicUrl(fileName);
+                imageUrl = publicUrlData.publicUrl;
+            }
 
-            partialPaymentForm.addEventListener('submit', async (e) => {
+            const newLoan = { name: document.getElementById('customerName').value, loanDate: document.getElementById('loanDate').value, principal: parseFloat(document.getElementById('principal').value), interestRate: parseFloat(document.getElementById('interestRate').value), loanDuration: parseInt(document.getElementById('loanDuration').value), status: 'อยู่ระหว่างดำเนินการ', notes: document.getElementById('notes').value, imageUrl: imageUrl };
+            const { error } = await supabaseClient.from('loans').insert([newLoan]);
+            
+            submitButton.disabled = false; submitButton.textContent = 'เพิ่มข้อมูล';
+
+            if (error) { alert('เกิดข้อผิดพลาด: ' + error.message); } 
+            else { await fetchAndRenderCustomers(); addCustomerForm.reset(); addModal.classList.add('hidden'); }
+        });
+        
+        editCustomerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const customerId = document.getElementById('editCustomerId').value;
+            const updatedLoan = { name: document.getElementById('editCustomerName').value, loanDate: document.getElementById('editLoanDate').value, principal: parseFloat(document.getElementById('editPrincipal').value), interestRate: parseFloat(document.getElementById('editInterestRate').value), loanDuration: parseInt(document.getElementById('editLoanDuration').value), status: document.getElementById('editStatus').value, notes: document.getElementById('editNotes').value };
+            const { error } = await supabaseClient.from('loans').update(updatedLoan).eq('id', customerId);
+            if (error) { alert('ไม่สามารถอัปเดตข้อมูลได้'); } else { await fetchAndRenderCustomers(); editModal.classList.add('hidden'); }
+        });
+
+        customerListContainer.addEventListener('click', async (e) => {
+            const target = e.target.closest('button, a');
+            if (!target) return;
+            const card = target.closest('.customer-card-container');
+            const id = card.dataset.id;
+            
+            if (target.classList.contains('customer-detail-link')) {
                 e.preventDefault();
-                const id = document.getElementById('partialPaymentLoanId').value;
-                const amountPaid = parseFloat(document.getElementById('paymentAmount').value);
-                if (isNaN(amountPaid) || amountPaid <= 0) { alert('กรุณาใส่จำนวนเงินที่ถูกต้อง'); return; }
-                
+                showDetailModal(id);
+            } else if (target.classList.contains('partial-payment-btn')) {
+                document.getElementById('partialPaymentLoanId').value = id;
+                partialPaymentModal.classList.remove('hidden');
+                document.getElementById('paymentAmount').focus();
+            } else if (target.classList.contains('pay-interest-btn')) {
+                if (!confirm('ยืนยันการชำระดอกเบี้ย?')) return;
                 const { data: loan } = await supabaseClient.from('loans').select('*').eq('id', id).single();
-                const { interest } = calculateLoanDetails(loan.principal, loan.interestRate, loan.loanDuration, loan.loanDate);
-                let principalReduction = (amountPaid > interest) ? amountPaid - interest : 0;
-                let newPrincipal = loan.principal - principalReduction;
-                if (newPrincipal < 0) newPrincipal = 0;
-
-                const loanUpdate = { principal: newPrincipal, loanDate: new Date().toISOString().split('T')[0], status: newPrincipal <= 0 ? 'ปิดยอดแล้ว' : 'อยู่ระหว่างดำเนินการ' };
-                const paymentRecord = { loan_id: loan.id, amount_paid: amountPaid, payment_date: new Date().toISOString().split('T')[0], notes: `ชำระ ${amountPaid}บ (ลดต้น ${principalReduction}บ)` };
-
+                const { interest, dueDate } = calculateLoanDetails(loan.principal, loan.interestRate, loan.loanDuration, loan.loanDate);
+                const newLoanDate = new Date(dueDate);
+                const loanUpdate = { interestPaid: (loan.interestPaid || 0) + interest, paymentsMade: (loan.paymentsMade || 0) + 1, loanDate: newLoanDate.toISOString().split('T')[0] };
+                const paymentRecord = { loan_id: loan.id, amount_paid: interest, payment_date: new Date().toISOString().split('T')[0], notes: 'ชำระดอกเบี้ย' };
                 await supabaseClient.from('loans').update(loanUpdate).eq('id', id);
                 await supabaseClient.from('payment_history').insert([paymentRecord]);
-                
-                partialPaymentModal.classList.add('hidden');
-                partialPaymentForm.reset();
                 fetchAndRenderCustomers();
-            });
+            } else if (target.classList.contains('pay-off-btn')) {
+                 if (!confirm('ยืนยันการปิดยอด?')) return;
+                 await supabaseClient.from('loans').update({ status: 'ปิดยอดแล้ว' }).eq('id', id);
+                 fetchAndRenderCustomers();
+            } else if (target.classList.contains('edit-btn')) {
+                const { data: loan } = await supabaseClient.from('loans').select('*').eq('id', id).single();
+                document.getElementById('editCustomerId').value = loan.id; 
+                document.getElementById('editCustomerName').value = loan.name; 
+                document.getElementById('editLoanDate').value = loan.loanDate; 
+                document.getElementById('editPrincipal').value = loan.principal; 
+                document.getElementById('editInterestRate').value = loan.interestRate; 
+                document.getElementById('editLoanDuration').value = loan.loanDuration;
+                document.getElementById('editStatus').value = loan.status;
+                document.getElementById('editNotes').value = loan.notes || '';
+                editModal.classList.remove('hidden');
+            } else if (target.classList.contains('delete-btn')) {
+                const { data: loan } = await supabaseClient.from('loans').select('*').eq('id', id).single();
+                if (confirm(`คุณต้องการลบข้อมูลของ ${loan.name} ใช่หรือไม่?`)) {
+                    await supabaseClient.from('loans').delete().eq('id', id);
+                    fetchAndRenderCustomers();
+                }
+            }
+        });
 
-            addCustomerBtn.addEventListener('click', () => {
-                addCustomerForm.reset();
-                addModal.classList.remove('hidden');
-                document.getElementById('customerName').focus();
-            });
+        partialPaymentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('partialPaymentLoanId').value;
+            const amountPaid = parseFloat(document.getElementById('paymentAmount').value);
+            if (isNaN(amountPaid) || amountPaid <= 0) { alert('กรุณาใส่จำนวนเงินที่ถูกต้อง'); return; }
             
-            document.getElementById('exportCsvBtn').addEventListener('click', () => { /* Add export logic if needed */ });
+            const { data: loan } = await supabaseClient.from('loans').select('*').eq('id', id).single();
+            const { interest } = calculateLoanDetails(loan.principal, loan.interestRate, loan.loanDuration, loan.loanDate);
+            let principalReduction = (amountPaid > interest) ? amountPaid - interest : 0;
+            let newPrincipal = loan.principal - principalReduction;
+            if (newPrincipal < 0) newPrincipal = 0;
 
+            const loanUpdate = { principal: newPrincipal, loanDate: new Date().toISOString().split('T')[0], status: newPrincipal <= 0 ? 'ปิดยอดแล้ว' : 'อยู่ระหว่างดำเนินการ' };
+            const paymentRecord = { loan_id: loan.id, amount_paid: amountPaid, payment_date: new Date().toISOString().split('T')[0], notes: `ชำระ ${amountPaid}บ (ลดต้น ${principalReduction}บ)` };
+
+            await supabaseClient.from('loans').update(loanUpdate).eq('id', id);
+            await supabaseClient.from('payment_history').insert([paymentRecord]);
+            
+            partialPaymentModal.classList.add('hidden');
+            partialPaymentForm.reset();
             fetchAndRenderCustomers();
+        });
 
-        } catch (e) {
-            logToScreen('Critical Error: ' + e.message);
-        }
+        addCustomerBtn.addEventListener('click', () => {
+            addCustomerForm.reset();
+            addModal.classList.remove('hidden');
+            document.getElementById('customerName').focus();
+        });
+        
+        document.getElementById('exportCsvBtn').addEventListener('click', exportToCSV);
+        closeDetailModalBtn.addEventListener('click', () => detailModal.classList.add('hidden'));
+
+        fetchAndRenderCustomers();
     });
 </script>
 
