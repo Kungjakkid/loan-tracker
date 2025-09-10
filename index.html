@@ -27,8 +27,6 @@
         .status-red { @apply bg-red-100 text-red-800; }
         .status-gray { @apply bg-gray-200 text-gray-800; }
         .status-blue { @apply bg-blue-100 text-blue-800; }
-
-        /* --- CSS สำหรับ List View (ใช้ทุกขนาดจอ) --- */
         .customer-card-container {
             display: block;
             margin-bottom: 1rem;
@@ -56,31 +54,57 @@
             <button id="exportCsvBtn" class="btn btn-success w-full flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 5a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V6a1 1 0 00-1-1h-1v1a1 1 0 11-2 0V5H7v1a1 1 0 11-2 0V5H4z" /></svg><span>ดึงข้อมูล (CSV)</span></button>
         </div>
        
-        <div id="customerListContainer" class="space-y-4">
-            </div>
+        <div id="customerListContainer" class="space-y-4"></div>
     </div>
 
     <div id="addModal" class="fixed inset-0 bg-black bg-opacity-60 h-full w-full flex items-center justify-center hidden p-4 modal-enter z-50">
         <div class="relative p-5 border w-full max-w-2xl shadow-lg rounded-xl bg-white m-4">
             <h2 class="text-2xl font-semibold mb-5 text-gray-800">เพิ่มข้อมูลลูกค้า</h2>
-            <form id="addCustomerForm">
-                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                    <div><label class="block text-sm font-medium text-gray-600 mb-1">ชื่อลูกค้า</label><input type="text" id="customerName" class="form-input" required></div>
-                    <div><label class="block text-sm font-medium text-gray-600 mb-1">วันที่กู้</label><input type="date" id="loanDate" class="form-input" required></div>
-                    <div><label class="block text-sm font-medium text-gray-600 mb-1">เงินกู้ (บาท)</label><input type="number" id="principal" class="form-input" required></div>
-                    <div><label class="block text-sm font-medium text-gray-600 mb-1">อัตราดอกเบี้ย (%)</label><input type="number" id="interestRate" class="form-input" required step="0.01"></div>
-                    <div><label class="block text-sm font-medium text-gray-600 mb-1">จำนวนวัน</label><input type="number" id="loanDuration" class="form-input" required></div>
-                    <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-600 mb-1">รูปภาพลูกค้า (ถ้ามี)</label><input type="file" id="customerImage" accept="image/*" class="form-input"></div>
-                    <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-600 mb-1">หมายเหตุ</label><textarea id="notes" class="form-input h-20"></textarea></div>
-                    <div class="md:col-span-2 mt-4 flex items-center justify-end space-x-3">
-                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('addModal').classList.add('hidden')">ยกเลิก</button>
-                        <button type="submit" class="btn btn-primary flex-1">เพิ่มข้อมูล</button>
-                    </div>
+            <form id="addCustomerForm" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">ชื่อลูกค้า</label><input type="text" id="customerName" class="form-input" required></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">วันที่กู้</label><input type="date" id="loanDate" class="form-input" required></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">เงินกู้ (บาท)</label><input type="number" id="principal" class="form-input" required></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">อัตราดอกเบี้ย (%)</label><input type="number" id="interestRate" class="form-input" required step="0.01"></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">จำนวนวัน</label><input type="number" id="loanDuration" class="form-input" required></div>
+                <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-600 mb-1">รูปภาพลูกค้า (ถ้ามี)</label><input type="file" id="customerImage" accept="image/*" class="form-input"></div>
+                <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-600 mb-1">หมายเหตุ</label><textarea id="notes" class="form-input h-20"></textarea></div>
+                <div class="md:col-span-2 mt-4 flex items-center justify-end space-x-3">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('addModal').classList.add('hidden')">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary flex-1">เพิ่มข้อมูล</button>
                 </div>
             </form>
         </div>
     </div>
-
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-60 h-full w-full flex items-center justify-center hidden p-4 z-50">
+        <div class="relative p-5 border w-full max-w-2xl shadow-lg rounded-xl bg-white m-4 modal-enter">
+            <h3 class="text-2xl leading-6 font-semibold text-gray-900 mb-5">แก้ไขข้อมูลลูกค้า</h3>
+            <form id="editCustomerForm" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                <input type="hidden" id="editCustomerId">
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">ชื่อลูกค้า</label><input type="text" id="editCustomerName" class="form-input" required></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">วันที่กู้</label><input type="date" id="editLoanDate" class="form-input" required></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">เงินกู้ (บาท)</label><input type="number" id="editPrincipal" class="form-input" required></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">อัตราดอกเบี้ย (%)</label><input type="number" id="editInterestRate" class="form-input" required step="0.01"></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">จำนวนวัน</label><input type="number" id="editLoanDuration" class="form-input" required></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">สถานะ</label><select id="editStatus" class="form-input"><option value="อยู่ระหว่างดำเนินการ">อยู่ระหว่างดำเนินการ</option><option value="ปิดยอดแล้ว">ปิดยอดแล้ว</option><option value="เกินกำหนด">เกินกำหนด</option></select></div>
+                <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-600 mb-1">หมายเหตุ</label><textarea id="editNotes" class="form-input"></textarea></div>
+                <div class="md:col-span-2 mt-4 flex items-center justify-end space-x-3">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('editModal').classList.add('hidden')">ยกเลิก</button>
+                    <button type="submit" class="btn btn-success">บันทึกการเปลี่ยนแปลง</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="detailModal" class="fixed inset-0 bg-black bg-opacity-60 h-full w-full flex items-center justify-center hidden p-4 z-50 modal-enter">
+        <div class="relative p-6 border w-full max-w-3xl shadow-lg rounded-xl bg-white m-4 max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4"><h3 class="text-2xl leading-6 font-semibold text-gray-900">รายละเอียดลูกค้า</h3><button id="closeDetailModalBtn" class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button></div>
+            <div class="overflow-y-auto">
+                <img id="detailImage" src="" alt="รูปลูกค้า" class="w-32 h-32 object-cover rounded-lg mb-4 hidden">
+                <div id="detailModalContent" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm"></div>
+                <h4 class="text-lg font-semibold text-gray-800 mt-6 mb-2">ประวัติการชำระเงิน</h4>
+                <div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-600"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th class="px-4 py-2">วันที่ชำระ</th><th class="px-4 py-2">จำนวนเงิน (บาท)</th><th class="px-4 py-2">หมายเหตุ</th></tr></thead><tbody id="paymentHistoryBody"></tbody></table></div>
+            </div>
+        </div>
+    </div>
     <div id="partialPaymentModal" class="fixed inset-0 bg-black bg-opacity-60 h-full w-full flex items-center justify-center hidden p-4 modal-enter z-50">
         <div class="relative p-5 border w-full max-w-md shadow-lg rounded-xl bg-white m-4">
             <h3 class="text-xl font-semibold mb-4">บันทึกการชำระเงิน/ลดต้น</h3>
@@ -121,6 +145,10 @@
         const addCustomerBtn = document.getElementById('addCustomerBtn');
         const addModal = document.getElementById('addModal');
         const addCustomerForm = document.getElementById('addCustomerForm');
+        const editModal = document.getElementById('editModal');
+        const editCustomerForm = document.getElementById('editCustomerForm');
+        const detailModal = document.getElementById('detailModal');
+        const closeDetailModalBtn = document.getElementById('closeDetailModalBtn');
         const partialPaymentModal = document.getElementById('partialPaymentModal');
         const partialPaymentForm = document.getElementById('partialPaymentForm');
         
@@ -172,7 +200,7 @@
 
                 card.innerHTML = `
                     <div class="flex justify-between items-center pb-3 border-b border-gray-200">
-                        <h3 class="font-bold text-lg text-gray-800">${customer.name}</h3>
+                        <h3 class="font-bold text-lg text-gray-800"><a href="#" class="text-blue-600 hover:underline customer-detail-link" data-id="${customer.id}">${customer.name}</a></h3>
                         <span class="status-badge ${statusClass}">${statusText}</span>
                     </div>
                     <div class="grid grid-cols-2 gap-x-4 gap-y-2 mt-3 text-sm">
@@ -187,6 +215,8 @@
                         <button class="pay-interest-btn text-xs btn bg-blue-100 text-blue-700" data-id="${customer.id}">จ่ายดอก</button>
                         <button class="partial-payment-btn text-xs btn bg-green-100 text-green-700" data-id="${customer.id}">ชำระ/ลดต้น</button>
                         <button class="pay-off-btn text-xs btn bg-gray-500 text-white" data-id="${customer.id}">ปิดยอด</button>
+                        <button class="edit-btn text-xs btn bg-yellow-100 text-yellow-700" data-id="${customer.id}">แก้ไข</button>
+                        <button class="delete-btn text-xs btn bg-red-100 text-red-700" data-id="${customer.id}">ลบ</button>
                     </div>
                 `;
                 customerListContainer.appendChild(card);
@@ -206,31 +236,39 @@
                 const { error: uploadError } = await supabaseClient.storage.from('customer-avatars').upload(fileName, imageFile);
                 if (uploadError) {
                     alert('อัปโหลดรูปไม่ได้: ' + uploadError.message);
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'เพิ่มข้อมูล';
-                    return;
+                    submitButton.disabled = false; submitButton.textContent = 'เพิ่มข้อมูล'; return;
                 }
                 const { data: publicUrlData } = supabaseClient.storage.from('customer-avatars').getPublicUrl(fileName);
                 imageUrl = publicUrlData.publicUrl;
             }
 
-            const newLoan = { name: document.getElementById('customerName').value, loanDate: document.getElementById('loanDate').value, principal: parseFloat(document.getElementById('principal').value), interestRate: parseFloat(document.getElementById('interestRate').value), loanDuration: parseInt(document.getElementById('loanDuration').value), status: 'อยู่ระหว่างดำเนินการ', imageUrl: imageUrl };
+            const newLoan = { name: document.getElementById('customerName').value, loanDate: document.getElementById('loanDate').value, principal: parseFloat(document.getElementById('principal').value), interestRate: parseFloat(document.getElementById('interestRate').value), loanDuration: parseInt(document.getElementById('loanDuration').value), status: 'อยู่ระหว่างดำเนินการ', notes: document.getElementById('notes').value, imageUrl: imageUrl };
             const { error } = await supabaseClient.from('loans').insert([newLoan]);
             
-            submitButton.disabled = false;
-            submitButton.textContent = 'เพิ่มข้อมูล';
+            submitButton.disabled = false; submitButton.textContent = 'เพิ่มข้อมูล';
 
             if (error) { alert('เกิดข้อผิดพลาด: ' + error.message); } 
             else { await fetchAndRenderCustomers(); addCustomerForm.reset(); addModal.classList.add('hidden'); }
         });
+        
+        editCustomerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const customerId = document.getElementById('editCustomerId').value;
+            const updatedLoan = { name: document.getElementById('editCustomerName').value, loanDate: document.getElementById('editLoanDate').value, principal: parseFloat(document.getElementById('editPrincipal').value), interestRate: parseFloat(document.getElementById('editInterestRate').value), loanDuration: parseInt(document.getElementById('editLoanDuration').value), status: document.getElementById('editStatus').value, notes: document.getElementById('editNotes').value };
+            const { error } = await supabaseClient.from('loans').update(updatedLoan).eq('id', customerId);
+            if (error) { alert('ไม่สามารถอัปเดตข้อมูลได้'); } else { await fetchAndRenderCustomers(); editModal.classList.add('hidden'); }
+        });
 
         customerListContainer.addEventListener('click', async (e) => {
-            const target = e.target.closest('button');
+            const target = e.target.closest('button, a');
             if (!target) return;
             const card = target.closest('.customer-card-container');
             const id = card.dataset.id;
             
-            if (target.classList.contains('partial-payment-btn')) {
+            if (target.classList.contains('customer-detail-link')) {
+                e.preventDefault();
+                showDetailModal(id);
+            } else if (target.classList.contains('partial-payment-btn')) {
                 document.getElementById('partialPaymentLoanId').value = id;
                 partialPaymentModal.classList.remove('hidden');
                 document.getElementById('paymentAmount').focus();
@@ -239,10 +277,8 @@
                 const { data: loan } = await supabaseClient.from('loans').select('*').eq('id', id).single();
                 const { interest, dueDate } = calculateLoanDetails(loan.principal, loan.interestRate, loan.loanDuration, loan.loanDate);
                 const newLoanDate = new Date(dueDate);
-                
                 const loanUpdate = { interestPaid: (loan.interestPaid || 0) + interest, paymentsMade: (loan.paymentsMade || 0) + 1, loanDate: newLoanDate.toISOString().split('T')[0] };
                 const paymentRecord = { loan_id: loan.id, amount_paid: interest, payment_date: new Date().toISOString().split('T')[0], notes: 'ชำระดอกเบี้ย' };
-                
                 await supabaseClient.from('loans').update(loanUpdate).eq('id', id);
                 await supabaseClient.from('payment_history').insert([paymentRecord]);
                 fetchAndRenderCustomers();
@@ -250,6 +286,23 @@
                  if (!confirm('ยืนยันการปิดยอด?')) return;
                  await supabaseClient.from('loans').update({ status: 'ปิดยอดแล้ว' }).eq('id', id);
                  fetchAndRenderCustomers();
+            } else if (target.classList.contains('edit-btn')) {
+                const { data: loan } = await supabaseClient.from('loans').select('*').eq('id', id).single();
+                document.getElementById('editCustomerId').value = loan.id; 
+                document.getElementById('editCustomerName').value = loan.name; 
+                document.getElementById('editLoanDate').value = loan.loanDate; 
+                document.getElementById('editPrincipal').value = loan.principal; 
+                document.getElementById('editInterestRate').value = loan.interestRate; 
+                document.getElementById('editLoanDuration').value = loan.loanDuration;
+                document.getElementById('editStatus').value = loan.status;
+                document.getElementById('editNotes').value = loan.notes || '';
+                editModal.classList.remove('hidden');
+            } else if (target.classList.contains('delete-btn')) {
+                const { data: loan } = await supabaseClient.from('loans').select('*').eq('id', id).single();
+                if (confirm(`คุณต้องการลบข้อมูลของ ${loan.name} ใช่หรือไม่?`)) {
+                    await supabaseClient.from('loans').delete().eq('id', id);
+                    fetchAndRenderCustomers();
+                }
             }
         });
 
@@ -265,11 +318,7 @@
             let newPrincipal = loan.principal - principalReduction;
             if (newPrincipal < 0) newPrincipal = 0;
 
-            const loanUpdate = {
-                principal: newPrincipal,
-                loanDate: new Date().toISOString().split('T')[0],
-                status: newPrincipal === 0 ? 'ปิดยอดแล้ว' : 'อยู่ระหว่างดำเนินการ'
-            };
+            const loanUpdate = { principal: newPrincipal, loanDate: new Date().toISOString().split('T')[0], status: newPrincipal <= 0 ? 'ปิดยอดแล้ว' : 'อยู่ระหว่างดำเนินการ' };
             const paymentRecord = { loan_id: loan.id, amount_paid: amountPaid, payment_date: new Date().toISOString().split('T')[0], notes: `ชำระ ${amountPaid}บ (ลดต้น ${principalReduction}บ)` };
 
             await supabaseClient.from('loans').update(loanUpdate).eq('id', id);
@@ -286,7 +335,8 @@
             document.getElementById('customerName').focus();
         });
         
-        document.getElementById('exportCsvBtn').addEventListener('click', () => { /* Add export logic if needed */ });
+        document.getElementById('exportCsvBtn').addEventListener('click', exportToCSV);
+        closeDetailModalBtn.addEventListener('click', () => detailModal.classList.add('hidden'));
 
         fetchAndRenderCustomers();
     });
