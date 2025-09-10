@@ -39,47 +39,14 @@
         .status-select {
             @apply appearance-none bg-transparent border-0 rounded-lg py-1 px-2 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400;
         }
-
-        /* --- CSS สำหรับ Responsive Card Layout --- */
         @media (max-width: 768px) {
-            .responsive-table thead {
-                display: none;
-            }
-            .responsive-table tr {
-                display: block;
-                margin-bottom: 1rem;
-                border-radius: 0.75rem;
-                overflow: hidden;
-                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            }
-            .responsive-table td {
-                display: block;
-                text-align: right;
-                padding-left: 50%;
-                position: relative;
-                border-bottom: 1px solid #e5e7eb;
-            }
-            .responsive-table td:last-child {
-                border-bottom: 0;
-            }
-            .responsive-table td::before {
-                content: attr(data-label);
-                position: absolute;
-                left: 1.5rem;
-                font-weight: 600;
-                text-align: left;
-                white-space: nowrap;
-            }
-            .responsive-table td.card-header {
-                padding-left: 1.5rem;
-                text-align: left;
-                font-size: 1.125rem;
-                font-weight: 700;
-                background-color: #f9fafb;
-            }
-             .responsive-table td.card-header::before {
-                content: none;
-            }
+            .responsive-table thead { display: none; }
+            .responsive-table tr { display: block; margin-bottom: 1rem; border-radius: 0.75rem; overflow: hidden; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+            .responsive-table td { display: block; text-align: right; padding-left: 50%; position: relative; border-bottom: 1px solid #e5e7eb; }
+            .responsive-table td:last-child { border-bottom: 0; }
+            .responsive-table td::before { content: attr(data-label); position: absolute; left: 1.5rem; font-weight: 600; text-align: left; white-space: nowrap; }
+            .responsive-table td.card-header { padding-left: 1.5rem; text-align: left; font-size: 1.125rem; font-weight: 700; background-color: #f9fafb; }
+            .responsive-table td.card-header::before { content: none; }
         }
     </style>
 </head>
@@ -91,29 +58,14 @@
         </header>
 
         <div class="hidden md:grid md:grid-cols-3 gap-4 mb-8">
-            <div class="bg-white p-6 rounded-xl shadow-md flex flex-col items-center justify-center">
-                <h3 class="text-lg font-semibold text-gray-500">ลูกค้าทั้งหมด</h3>
-                <p id="totalCustomers" class="text-4xl font-bold text-indigo-600 mt-2">0</p>
-            </div>
-            <div class="bg-white p-6 rounded-xl shadow-md flex flex-col items-center justify-center">
-                <h3 class="text-lg font-semibold text-gray-500">เงินต้นทั้งหมด</h3>
-                <p id="totalPrincipal" class="text-4xl font-bold text-blue-600 mt-2">฿0</p>
-            </div>
-            <div class="bg-white p-6 rounded-xl shadow-md flex flex-col items-center justify-center">
-                <h3 class="text-lg font-semibold text-gray-500">ยอดค้างชำระรวม</h3>
-                <p id="totalDue" class="text-4xl font-bold text-red-600 mt-2">฿0</p>
-            </div>
+            <div class="bg-white p-6 rounded-xl shadow-md flex flex-col items-center justify-center"><h3 class="text-lg font-semibold text-gray-500">ลูกค้าทั้งหมด</h3><p id="totalCustomers" class="text-4xl font-bold text-indigo-600 mt-2">0</p></div>
+            <div class="bg-white p-6 rounded-xl shadow-md flex flex-col items-center justify-center"><h3 class="text-lg font-semibold text-gray-500">เงินต้นทั้งหมด</h3><p id="totalPrincipal" class="text-4xl font-bold text-blue-600 mt-2">฿0</p></div>
+            <div class="bg-white p-6 rounded-xl shadow-md flex flex-col items-center justify-center"><h3 class="text-lg font-semibold text-gray-500">ยอดค้างชำระรวม</h3><p id="totalDue" class="text-4xl font-bold text-red-600 mt-2">฿0</p></div>
         </div>
         
         <div class="mb-8 flex space-x-4">
-             <button id="toggleFormBtn" class="w-full bg-blue-500 text-white font-semibold py-2.5 px-4 rounded-lg shadow-md hover:bg-blue-600 transition flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
-                <span>เพิ่มลูกค้าใหม่</span>
-            </button>
-            <button id="exportCsvBtn" class="w-full bg-green-500 text-white font-semibold py-2.5 px-4 rounded-lg shadow-md hover:bg-green-600 transition flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 5a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V6a1 1 0 00-1-1h-1v1a1 1 0 11-2 0V5H7v1a1 1 0 11-2 0V5H4z" /></svg>
-                <span>ดึงข้อมูล (CSV)</span>
-            </button>
+             <button id="toggleFormBtn" class="w-full bg-blue-500 text-white font-semibold py-2.5 px-4 rounded-lg shadow-md hover:bg-blue-600 transition flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg><span>เพิ่มลูกค้าใหม่</span></button>
+            <button id="exportCsvBtn" class="w-full bg-green-500 text-white font-semibold py-2.5 px-4 rounded-lg shadow-md hover:bg-green-600 transition flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 5a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V6a1 1 0 00-1-1h-1v1a1 1 0 11-2 0V5H7v1a1 1 0 11-2 0V5H4z" /></svg><span>ดึงข้อมูล (CSV)</span></button>
         </div>
        
         <div class="bg-white shadow-md rounded-xl overflow-hidden">
@@ -121,11 +73,7 @@
                 <table id="customerTable" class="w-full text-sm text-left text-gray-600 responsive-table">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0 z-10">
                         <tr>
-                            <th scope="col" class="px-6 py-3">ชื่อลูกค้า</th>
-                            <th scope="col" class="px-6 py-3">ยอดรวม</th>
-                            <th scope="col" class="px-6 py-3">ครบกำหนด</th>
-                            <th scope="col" class="px-6 py-3">สถานะ</th>
-                            <th scope="col" class="px-6 py-3 text-center">จัดการ</th>
+                            <th scope="col" class="px-6 py-3">ชื่อลูกค้า</th><th scope="col" class="px-6 py-3">ยอดรวม</th><th scope="col" class="px-6 py-3">ครบกำหนด</th><th scope="col" class="px-6 py-3">สถานะ</th><th scope="col" class="px-6 py-3 text-center">จัดการ</th>
                         </tr>
                     </thead>
                     <tbody id="customerTableBody"></tbody>
@@ -137,17 +85,16 @@
     <div id="addCustomerContainer" class="fixed inset-0 bg-black bg-opacity-60 h-full w-full flex items-center justify-center hidden p-4 modal-enter z-50">
          <div class="relative p-5 border w-full max-w-2xl shadow-lg rounded-xl bg-white m-4">
             <h2 class="text-2xl font-semibold mb-5 text-gray-800">เพิ่มข้อมูลลูกค้า</h2>
-            <form id="addCustomerForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
-                 <div><label for="customerName" class="block text-sm font-medium text-gray-600 mb-1">ชื่อลูกค้า</label><input type="text" id="customerName" placeholder="ชื่อลูกค้า" class="form-input" required></div>
-                <div><label for="loanDate" class="block text-sm font-medium text-gray-600 mb-1">วันที่กู้</label><input type="date" id="loanDate" class="form-input" required></div>
-                <div><label for="principal" class="block text-sm font-medium text-gray-600 mb-1">เงินกู้ (บาท)</label><input type="number" id="principal" placeholder="เงินกู้ (บาท)" class="form-input" required></div>
-                <div><label for="interestRate" class="block text-sm font-medium text-gray-600 mb-1">อัตราดอกเบี้ย (%)</label><input type="number" id="interestRate" placeholder="อัตราดอกเบี้ย (%)" class="form-input" required step="0.01"></div>
-                <div><label for="loanDuration" class="block text-sm font-medium text-gray-600 mb-1">จำนวนวัน</label><input type="number" id="loanDuration" placeholder="จำนวนวัน" class="form-input" required></div>
-                <div><label for="status" class="block text-sm font-medium text-gray-600 mb-1">สถานะ</label><select id="status" class="form-input"><option value="อยู่ระหว่างดำเนินการ">อยู่ระหว่างดำเนินการ</option><option value="ปิดยอดแล้ว">ปิดยอดแล้ว</option><option value="เกินกำหนด">เกินกำหนด</option></select></div>
-                <div><label for="interestPaid" class="block text-sm font-medium text-gray-600 mb-1">ดอกที่จ่ายมา</label><input type="number" id="interestPaid" placeholder="ดอกที่จ่ายมา" class="form-input" value="0"></div>
-                <div><label for="paymentsMade" class="block text-sm font-medium text-gray-600 mb-1">จำนวนครั้งที่จ่าย</label><input type="number" id="paymentsMade" placeholder="จำนวนครั้งที่จ่าย" class="form-input" value="0"></div>
-                <div class="md:col-span-2 lg:col-span-3"><label for="notes" class="block text-sm font-medium text-gray-600 mb-1">หมายเหตุ</label><textarea id="notes" placeholder="หมายเหตุ..." class="form-input h-20"></textarea></div>
-                <div class="md:col-span-2 lg:col-span-3 mt-4 flex items-center justify-end space-x-3">
+            <form id="addCustomerForm" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">ชื่อลูกค้า</label><input type="text" id="customerName" class="form-input" required></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">วันที่กู้</label><input type="date" id="loanDate" class="form-input" required></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">เงินกู้ (บาท)</label><input type="number" id="principal" class="form-input" required></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">อัตราดอกเบี้ย (%)</label><input type="number" id="interestRate" class="form-input" required step="0.01"></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">จำนวนวัน</label><input type="number" id="loanDuration" class="form-input" required></div>
+                <div><label class="block text-sm font-medium text-gray-600 mb-1">สถานะ</label><select id="status" class="form-input"><option value="อยู่ระหว่างดำเนินการ">อยู่ระหว่างดำเนินการ</option><option value="ปิดยอดแล้ว">ปิดยอดแล้ว</option><option value="เกินกำหนด">เกินกำหนด</option></select></div>
+                <div class="md:col-span-3"><label class="block text-sm font-medium text-gray-600 mb-1">รูปภาพลูกค้า (ถ้ามี)</label><input type="file" id="customerImage" accept="image/*" class="form-input"></div>
+                <div class="md:col-span-3"><label class="block text-sm font-medium text-gray-600 mb-1">หมายเหตุ</label><textarea id="notes" placeholder="หมายเหตุ..." class="form-input h-20"></textarea></div>
+                <div class="md:col-span-3 mt-4 flex items-center justify-end space-x-3">
                     <button type="button" id="cancelAddBtn" class="py-2.5 px-5 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition">ยกเลิก</button>
                     <button type="submit" class="btn-primary flex-1">เพิ่มข้อมูล</button>
                 </div>
@@ -166,8 +113,6 @@
                 <div><label class="block text-sm font-medium text-gray-600 mb-1">อัตราดอกเบี้ย (%)</label><input type="number" id="editInterestRate" class="form-input" required step="0.01"></div>
                 <div><label class="block text-sm font-medium text-gray-600 mb-1">จำนวนวัน</label><input type="number" id="editLoanDuration" class="form-input" required></div>
                 <div><label class="block text-sm font-medium text-gray-600 mb-1">สถานะ</label><select id="editStatus" class="form-input"><option value="อยู่ระหว่างดำเนินการ">อยู่ระหว่างดำเนินการ</option><option value="ปิดยอดแล้ว">ปิดยอดแล้ว</option><option value="เกินกำหนด">เกินกำหนด</option></select></div>
-                <div><label class="block text-sm font-medium text-gray-600 mb-1">ดอกที่จ่ายมา</label><input type="number" id="editInterestPaid" class="form-input"></div>
-                <div><label class="block text-sm font-medium text-gray-600 mb-1">จำนวนครั้งที่จ่าย</label><input type="number" id="editPaymentsMade" class="form-input"></div>
                 <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-600 mb-1">หมายเหตุ</label><textarea id="editNotes" class="form-input"></textarea></div>
                 <div class="md:col-span-2 mt-4 flex items-center justify-end space-x-3">
                     <button type="button" id="cancelEdit" class="py-2 px-5 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition">ยกเลิก</button>
@@ -184,6 +129,7 @@
                 <button id="closeDetailModalBtn" class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
             </div>
             <div class="overflow-y-auto">
+                <img id="detailImage" src="" alt="รูปลูกค้า" class="w-32 h-32 object-cover rounded-lg mb-4 hidden">
                 <div id="detailModalContent" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm"></div>
                 <h4 class="text-lg font-semibold text-gray-800 mt-6 mb-2">ประวัติการชำระดอกเบี้ย</h4>
                 <div class="overflow-x-auto">
@@ -197,7 +143,6 @@
             </div>
         </div>
     </div>
-
 
 <script>
     const SUPABASE_URL = 'https://dkbojdqysnpyftjpcodv.supabase.co';
@@ -250,15 +195,21 @@
         const detailModal = document.getElementById('detailModal');
         const detailModalContent = document.getElementById('detailModalContent');
         const paymentHistoryBody = document.getElementById('paymentHistoryBody');
+        const detailImage = document.getElementById('detailImage');
+
         detailModalContent.innerHTML = 'กำลังโหลด...';
         paymentHistoryBody.innerHTML = '';
+        detailImage.classList.add('hidden');
         detailModal.classList.remove('hidden');
 
         const { data: loan, error: loanError } = await supabaseClient.from('loans').select('*').eq('id', loanId).single();
-        if (loanError) {
-            detailModalContent.innerHTML = 'ไม่สามารถโหลดข้อมูลได้';
-            return;
+        if (loanError) { detailModalContent.innerHTML = 'ไม่สามารถโหลดข้อมูลได้'; return; }
+
+        if(loan.imageUrl) {
+            detailImage.src = loan.imageUrl;
+            detailImage.classList.remove('hidden');
         }
+
         const { interest, totalRepay, dueDate } = calculateLoanDetails(loan.principal, loan.interestRate, loan.loanDuration, loan.loanDate);
         detailModalContent.innerHTML = `
             <div class="font-semibold text-gray-500">ชื่อลูกค้า:</div> <div>${loan.name}</div>
@@ -299,7 +250,7 @@
         
         async function fetchAndRenderCustomers() {
             const { data: customers, error } = await supabaseClient.from('loans').select('*').order('created_at', { ascending: false });
-            if (error) { console.error('Error fetching customers:', error); customerTableBody.innerHTML = `<tr><td colspan="5" class="text-center text-red-500 py-10">เกิดข้อผิดพลาดในการโหลดข้อมูล: ${error.message}</td></tr>`; return; }
+            if (error) { console.error('Error fetching customers:', error); customerTableBody.innerHTML = `<tr><td colspan="5" class="text-center text-red-500 py-10">เกิดข้อผิดพลาด: ${error.message}</td></tr>`; return; }
 
             const totalCustomers = customers.length;
             const totalPrincipal = customers.reduce((sum, c) => sum + c.principal, 0);
@@ -343,15 +294,40 @@
         
         addCustomerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const newLoan = { name: document.getElementById('customerName').value, loanDate: document.getElementById('loanDate').value, principal: parseFloat(document.getElementById('principal').value), interestRate: parseFloat(document.getElementById('interestRate').value), loanDuration: parseInt(document.getElementById('loanDuration').value), status: document.getElementById('status').value, interestPaid: parseFloat(document.getElementById('interestPaid').value || 0), paymentsMade: parseInt(document.getElementById('paymentsMade').value || 0), notes: document.getElementById('notes').value };
+            const imageFile = document.getElementById('customerImage').files[0];
+            let imageUrl = null;
+
+            const submitButton = addCustomerForm.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'กำลังบันทึก...';
+
+            if (imageFile) {
+                const fileName = `${Date.now()}_${imageFile.name}`;
+                const { error: uploadError } = await supabaseClient.storage.from('customer-avatars').upload(fileName, imageFile);
+                if (uploadError) {
+                    alert('ไม่สามารถอัปโหลดรูปภาพได้: ' + uploadError.message);
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'เพิ่มข้อมูล';
+                    return;
+                }
+                const { data: publicUrlData } = supabaseClient.storage.from('customer-avatars').getPublicUrl(fileName);
+                imageUrl = publicUrlData.publicUrl;
+            }
+
+            const newLoan = { name: document.getElementById('customerName').value, loanDate: document.getElementById('loanDate').value, principal: parseFloat(document.getElementById('principal').value), interestRate: parseFloat(document.getElementById('interestRate').value), loanDuration: parseInt(document.getElementById('loanDuration').value), status: document.getElementById('status').value, notes: document.getElementById('notes').value, imageUrl: imageUrl };
             const { error } = await supabaseClient.from('loans').insert([newLoan]);
-            if (error) { alert('เกิดข้อผิดพลาด: ' + error.message); console.error(error); } else { await fetchAndRenderCustomers(); addCustomerForm.reset(); addCustomerContainer.classList.add('hidden'); }
+            
+            submitButton.disabled = false;
+            submitButton.textContent = 'เพิ่มข้อมูล';
+
+            if (error) { alert('เกิดข้อผิดพลาด: ' + error.message); console.error(error); } 
+            else { await fetchAndRenderCustomers(); addCustomerForm.reset(); addCustomerContainer.classList.add('hidden'); }
         });
 
         editCustomerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const customerId = document.getElementById('editCustomerId').value;
-            const updatedLoan = { name: document.getElementById('editCustomerName').value, loanDate: document.getElementById('editLoanDate').value, principal: parseFloat(document.getElementById('editPrincipal').value), interestRate: parseFloat(document.getElementById('editInterestRate').value), loanDuration: parseInt(document.getElementById('editLoanDuration').value), status: document.getElementById('editStatus').value, interestPaid: parseFloat(document.getElementById('editInterestPaid').value || 0), paymentsMade: parseInt(document.getElementById('editPaymentsMade').value || 0), notes: document.getElementById('editNotes').value };
+            const updatedLoan = { name: document.getElementById('editCustomerName').value, loanDate: document.getElementById('editLoanDate').value, principal: parseFloat(document.getElementById('editPrincipal').value), interestRate: parseFloat(document.getElementById('editInterestRate').value), loanDuration: parseInt(document.getElementById('editLoanDuration').value), status: document.getElementById('editStatus').value, notes: document.getElementById('editNotes').value };
             const { error } = await supabaseClient.from('loans').update(updatedLoan).eq('id', customerId);
             if (error) { alert('ไม่สามารถอัปเดตข้อมูลได้'); } else { await fetchAndRenderCustomers(); closeEditModal(); }
         });
@@ -380,7 +356,7 @@
                     await fetchAndRenderCustomers();
                 }
             } else if (button.classList.contains('edit-btn')) {
-                document.getElementById('editCustomerId').value = customer.id; document.getElementById('editCustomerName').value = customer.name; document.getElementById('editLoanDate').value = customer.loanDate; document.getElementById('editPrincipal').value = customer.principal; document.getElementById('editInterestRate').value = customer.interestRate; document.getElementById('editLoanDuration').value = customer.loanDuration; document.getElementById('editStatus').value = customer.status; document.getElementById('editInterestPaid').value = customer.interestPaid || 0; document.getElementById('editPaymentsMade').value = customer.paymentsMade || 0; document.getElementById('editNotes').value = customer.notes || '';
+                document.getElementById('editCustomerId').value = customer.id; document.getElementById('editCustomerName').value = customer.name; document.getElementById('editLoanDate').value = customer.loanDate; document.getElementById('editPrincipal').value = customer.principal; document.getElementById('editInterestRate').value = customer.interestRate; document.getElementById('editLoanDuration').value = customer.loanDuration; document.getElementById('editStatus').value = customer.status; document.getElementById('editNotes').value = customer.notes || '';
                 editModal.classList.remove('hidden');
             } else if (button.classList.contains('pay-interest-btn')) {
                 const { interest, dueDate } = calculateLoanDetails(customer.principal, customer.interestRate, customer.loanDuration, customer.loanDate);
@@ -420,4 +396,3 @@
 
 </body>
 </html>
-
