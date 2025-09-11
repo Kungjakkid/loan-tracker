@@ -40,9 +40,10 @@
             <div class="bg-white p-6 rounded-xl shadow-md flex flex-col items-center justify-center"><h3 class="text-lg font-semibold text-gray-500">ยอดค้างชำระรวม</h3><p id="totalDue" class="text-4xl font-bold text-red-600 mt-2">฿0</p></div>
         </div>
         
-        <div class="mb-8 flex space-x-4">
-             <button id="addCustomerBtn" class="btn btn-primary w-full flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg><span>เพิ่มลูกค้าใหม่</span></button>
-            <button id="exportCsvBtn" class="btn btn-success w-full flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 5a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V6a1 1 0 00-1-1h-1v1a1 1 0 11-2 0V5H7v1a1 1 0 11-2 0V5H4z" /></svg><span>ดึงข้อมูล (CSV)</span></button>
+        <div class="mb-8 flex flex-wrap gap-4">
+             <button id="addCustomerBtn" class="btn btn-primary flex-1 min-w-[150px]">เพิ่มลูกค้าใหม่</button>
+            <button id="exportCsvBtn" class="btn btn-success flex-1 min-w-[150px]">ดึงข้อมูล (CSV)</button>
+            <button id="togglePaidOffBtn" class="btn btn-secondary flex-1 min-w-[150px]">แสดงที่ปิดยอดแล้ว</button>
         </div>
        
         <div id="customerListContainer" class="space-y-4"></div>
@@ -114,6 +115,7 @@
     const SUPABASE_URL = 'https://dkbojdqysnpyftjpcodv.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrYm9qZHF5c25weWZ0anBjb2R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0NjgzNzMsImV4cCI6MjA3MzA0NDM3M30.-_Ulncr6WV2j98MAq2FgvnqmZ4WwF42OvmvJrmLpaGA';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let showPaidOff = false;
 
     const formatDate = (isoString) => {
         if (!isoString) return '';
@@ -172,17 +174,23 @@
 
     async function fetchAndRenderCustomers() {
         const customerListContainer = document.getElementById('customerListContainer');
-        const { data: customers, error } = await supabaseClient.from('loans').select('*').order('created_at', { ascending: false });
-        if (error) { console.error('Error fetching data:', error); return; }
+        let query = supabaseClient.from('loans').select('*');
+        if (!showPaidOff) {
+            query = query.neq('status', 'ปิดยอดแล้ว');
+        }
+        const { data: customers, error } = await query.order('created_at', { ascending: false });
+        if (error) { console.error('Error:', error); return; }
+        const allCustomersResponse = await supabaseClient.from('loans').select('id');
         const activeLoans = customers.filter(c => c.status !== 'ปิดยอดแล้ว');
-        document.getElementById('totalCustomers').textContent = customers.length.toLocaleString('th-TH');
+        document.getElementById('totalCustomers').textContent = (allCustomersResponse.data?.length || 0).toLocaleString('th-TH');
         const totalPrincipal = activeLoans.reduce((sum, c) => sum + c.principal, 0);
         document.getElementById('totalPrincipal').textContent = '฿' + totalPrincipal.toLocaleString('th-TH');
         const totalDue = activeLoans.reduce((sum, c) => sum + calculateLoanDetails(c.principal, c.interestRate, c.loanDuration, c.loanDate).totalRepay, 0);
         document.getElementById('totalDue').textContent = '฿' + totalDue.toLocaleString('th-TH');
         customerListContainer.innerHTML = '';
         if (customers.length === 0) { 
-            customerListContainer.innerHTML = `<div class="text-center text-gray-500 py-10 bg-white rounded-xl shadow-md">ยังไม่มีข้อมูลลูกค้า</div>`; 
+            const message = showPaidOff ? "ไม่มีข้อมูลลูกค้าทั้งหมด" : "ไม่มีลูกค้าที่กำลังดำเนินการ";
+            customerListContainer.innerHTML = `<div class="text-center text-gray-500 py-10 bg-white rounded-xl shadow-md">${message}</div>`; 
             return; 
         }
         const today = new Date(); 
@@ -229,7 +237,7 @@
             customerListContainer.appendChild(card);
         });
     }
-
+    
     document.addEventListener('DOMContentLoaded', () => {
         const customerListContainer = document.getElementById('customerListContainer');
         const addCustomerBtn = document.getElementById('addCustomerBtn');
@@ -242,6 +250,7 @@
         const partialPaymentModal = document.getElementById('partialPaymentModal');
         const partialPaymentForm = document.getElementById('partialPaymentForm');
         const exportCsvBtn = document.getElementById('exportCsvBtn');
+        const togglePaidOffBtn = document.getElementById('togglePaidOffBtn');
 
         addCustomerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -276,12 +285,8 @@
 
         customerListContainer.addEventListener('click', async (e) => {
             const target = e.target.closest('button, a');
-            if (!target) return;
+            if (!target || !target.dataset.id) return;
             const id = target.dataset.id;
-            if(!id) return;
-            
-            const { data: loan, error: loanError } = await supabaseClient.from('loans').select('*').eq('id', id).single();
-            if (loanError || !loan) { alert('ไม่พบข้อมูลลูกค้า หรือเกิดข้อผิดพลาด'); return; }
             
             if (target.classList.contains('customer-detail-link')) {
                 e.preventDefault();
@@ -290,33 +295,38 @@
                 document.getElementById('partialPaymentLoanId').value = id;
                 partialPaymentModal.classList.remove('hidden');
                 document.getElementById('paymentAmount').focus();
-            } else if (target.classList.contains('pay-interest-btn')) {
-                if (!confirm('ยืนยันการชำระดอกเบี้ย?')) return;
-                const { interest, dueDate } = calculateLoanDetails(loan.principal, loan.interestRate, loan.loanDuration, loan.loanDate);
-                const newLoanDate = new Date(dueDate);
-                const loanUpdate = { interestPaid: (loan.interestPaid || 0) + interest, paymentsMade: (loan.paymentsMade || 0) + 1, loanDate: newLoanDate.toISOString().split('T')[0] };
-                const paymentRecord = { loan_id: loan.id, amount_paid: interest, payment_date: new Date().toISOString().split('T')[0], notes: 'ชำระดอกเบี้ย' };
-                await supabaseClient.from('loans').update(loanUpdate).eq('id', id);
-                await supabaseClient.from('payment_history').insert([paymentRecord]);
-                fetchAndRenderCustomers();
-            } else if (target.classList.contains('pay-off-btn')) {
-                 if (!confirm('ยืนยันการปิดยอด?')) return;
-                 await supabaseClient.from('loans').update({ status: 'ปิดยอดแล้ว' }).eq('id', id);
-                 fetchAndRenderCustomers();
-            } else if (target.classList.contains('edit-btn')) {
-                document.getElementById('editCustomerId').value = loan.id; 
-                document.getElementById('editCustomerName').value = loan.name; 
-                document.getElementById('editLoanDate').value = loan.loanDate; 
-                document.getElementById('editPrincipal').value = loan.principal; 
-                document.getElementById('editInterestRate').value = loan.interestRate; 
-                document.getElementById('editLoanDuration').value = loan.loanDuration;
-                document.getElementById('editStatus').value = loan.status;
-                document.getElementById('editNotes').value = loan.notes || '';
-                editModal.classList.remove('hidden');
-            } else if (target.classList.contains('delete-btn')) {
-                if (confirm(`คุณต้องการลบข้อมูลของ ${loan.name} ใช่หรือไม่?`)) {
-                    await supabaseClient.from('loans').delete().eq('id', id);
+            } else {
+                const { data: loan, error: loanError } = await supabaseClient.from('loans').select('*').eq('id', id).single();
+                if (loanError || !loan) { alert('ไม่พบข้อมูลลูกค้า หรือเกิดข้อผิดพลาด'); return; }
+
+                if (target.classList.contains('pay-interest-btn')) {
+                    if (!confirm('ยืนยันการชำระดอกเบี้ย?')) return;
+                    const { interest, dueDate } = calculateLoanDetails(loan.principal, loan.interestRate, loan.loanDuration, loan.loanDate);
+                    const newLoanDate = new Date(dueDate);
+                    const loanUpdate = { interestPaid: (loan.interestPaid || 0) + interest, paymentsMade: (loan.paymentsMade || 0) + 1, loanDate: newLoanDate.toISOString().split('T')[0] };
+                    const paymentRecord = { loan_id: loan.id, amount_paid: interest, payment_date: new Date().toISOString().split('T')[0], notes: 'ชำระดอกเบี้ย' };
+                    await supabaseClient.from('loans').update(loanUpdate).eq('id', id);
+                    await supabaseClient.from('payment_history').insert([paymentRecord]);
                     fetchAndRenderCustomers();
+                } else if (target.classList.contains('pay-off-btn')) {
+                    if (!confirm('ยืนยันการปิดยอด?')) return;
+                    await supabaseClient.from('loans').update({ status: 'ปิดยอดแล้ว' }).eq('id', id);
+                    fetchAndRenderCustomers();
+                } else if (target.classList.contains('edit-btn')) {
+                    document.getElementById('editCustomerId').value = loan.id; 
+                    document.getElementById('editCustomerName').value = loan.name; 
+                    document.getElementById('editLoanDate').value = loan.loanDate; 
+                    document.getElementById('editPrincipal').value = loan.principal; 
+                    document.getElementById('editInterestRate').value = loan.interestRate; 
+                    document.getElementById('editLoanDuration').value = loan.loanDuration;
+                    document.getElementById('editStatus').value = loan.status;
+                    document.getElementById('editNotes').value = loan.notes || '';
+                    editModal.classList.remove('hidden');
+                } else if (target.classList.contains('delete-btn')) {
+                    if (confirm(`คุณต้องการลบข้อมูลของ ${loan.name} ใช่หรือไม่?`)) {
+                        await supabaseClient.from('loans').delete().eq('id', id);
+                        fetchAndRenderCustomers();
+                    }
                 }
             }
         });
@@ -350,8 +360,21 @@
             document.getElementById('customerName').focus();
         });
         
-        // exportCsvBtn.addEventListener('click', exportToCSV);
+        exportCsvBtn.addEventListener('click', exportToCSV);
         closeDetailModalBtn.addEventListener('click', () => detailModal.classList.add('hidden'));
+        togglePaidOffBtn.addEventListener('click', () => {
+            showPaidOff = !showPaidOff;
+            if (showPaidOff) {
+                togglePaidOffBtn.textContent = 'ซ่อนที่ปิดยอดแล้ว';
+                togglePaidOffBtn.classList.remove('btn-secondary');
+                togglePaidOffBtn.classList.add('bg-gray-400', 'text-white');
+            } else {
+                togglePaidOffBtn.textContent = 'แสดงที่ปิดยอดแล้ว';
+                togglePaidOffBtn.classList.add('btn-secondary');
+                togglePaidOffBtn.classList.remove('bg-gray-400', 'text-white');
+            }
+            fetchAndRenderCustomers();
+        });
 
         fetchAndRenderCustomers();
     });
